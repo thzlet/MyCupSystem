@@ -1,27 +1,9 @@
 <div align="center">
 
 <img src="https://img.shields.io/badge/Copa%20do%20Mundo-2026-006847?style=for-the-badge&logo=fifa&logoColor=white" />
-<img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-red?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Versão-1.0.0-blue?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Licença-MIT-green?style=for-the-badge" />
-
-<br/><br/>
-
-```
-██████╗ ██╗ █████╗ ██████╗ ██╗ ██████╗
-██╔══██╗██║██╔══██╗██╔══██╗██║██╔═══██╗
-██║  ██║██║███████║██████╔╝██║██║   ██║
-██║  ██║██║██╔══██║██╔══██╗██║██║   ██║
-██████╔╝██║██║  ██║██║  ██║██║╚██████╔╝
-╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝ ╚═════╝
-
-██████╗ ██╗ ██████╗ ██╗████████╗ █████╗ ██╗
-██╔══██╗██║██╔════╝ ██║╚══██╔══╝██╔══██╗██║
-██║  ██║██║██║  ███╗██║   ██║   ███████║██║
-██║  ██║██║██║   ██║██║   ██║   ██╔══██║██║
-██████╔╝██║╚██████╔╝██║   ██║   ██║  ██║███████╗
-╚═════╝ ╚═╝ ╚═════╝ ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝
-```
 
 ### ⚽ Sua experiência. Sua Copa. Seu diário.
 
@@ -80,7 +62,6 @@ Cada jogo tem uma história e essa história merece ser contada por quem a viveu
 | ID | Funcionalidade | Descrição |
 |----|---------------|-----------|
 | RF12 | **Consultar Linha do Tempo** | Feed cronológico privado com filtros por data, seleção e jogo |
-| RF13 | **Consultar Estatísticas** | Painel com médias de notas e sentimentos mais frequentes do usuário |
 | RF14 | **Criar Lista de Jogos** | Organização personalizada de partidas em listas nomeadas |
 | RF15 | **Adicionar Favorito** | Marcação de jogos favoritos com acesso rápido em aba dedicada |
 
@@ -179,45 +160,17 @@ cp .env.example .env
 
 # 4. Siga as instruções específicas de cada módulo (frontend/backend)
 ```
-
 ---
 
 ## Documentação
 
 | Documento | Descrição | Status |
 |-----------|-----------|--------|
-| 📄 Documento de Requisitos | Requisitos funcionais (RF01–RF15) e não funcionais (RNF01–RNF08) | ✅ Concluído |
-| 📐 Diagramas UML | Casos de uso, classes, sequência | ✅ Concluído |
-| 🎨 Protótipos | Wireframes e mockups das telas | 🔄 Em andamento |
+| Documento de Requisitos | Requisitos funcionais (RF01–RF15) e não funcionais (RNF01–RNF08) | ✅ Concluído |
+| Diagramas UML | Casos de uso, classes, sequência, estados e atividades | ✅ Concluído |
+| Protótipos | Wireframes e mockups das telas | 🔄 Em andamento |
 
 ---
-
-## Personas do Sistema
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <h3>🔥 Ana Silva</h3>
-      <b>22 anos · Estudante Universitária</b><br/><br/>
-      Nível intermediário de tecnologia<br/>
-      Muito ativa em redes sociais<br/><br/>
-      <i>"Quero registrar cada emoção da Copa em um só lugar"</i><br/><br/>
-      ✅ Registrar opiniões e emoções<br/>
-      ✅ Avaliar jogos<br/>
-      ✅ Acompanhar estatísticas
-    </td>
-    <td align="center" width="50%">
-      <h3>👁️ João Pereira</h3>
-      <b>30 anos · Assistente Administrativo</b><br/><br/>
-      Nível básico-intermediário de tecnologia<br/>
-      Usa internet para consumo de informação<br/><br/>
-      <i>"Quero ver resultados rapidamente, sem complicação"</i><br/><br/>
-      ✅ Acessar resultados rapidamente<br/>
-      ✅ Consultar estatísticas<br/>
-      ✅ Interface simples e direta
-    </td>
-  </tr>
-</table>
 
 ---
 
@@ -233,12 +186,11 @@ cp .env.example .env
   </tr>
 </table>
 
-**Instituto Federal**
-**Bacharelado em Ciências da Computação  **
+**Bacharelado em Ciências da Computação**
 
 ---
 
-## 📌 Progresso do Projeto
+## Progresso do Projeto
 
 - [x] Documento de Requisitos Funcionais e Não Funcionais
 - [x] Diagramas UML (Casos de Uso, Classes, Sequência)
