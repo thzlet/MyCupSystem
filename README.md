@@ -168,7 +168,7 @@ cp .env.example .env
 |-----------|-----------|--------|
 | Documento de Requisitos | Requisitos funcionais (RF01–RF15) e não funcionais (RNF01–RNF08) | ✅ Concluído |
 | Diagramas UML | Casos de uso, classes, sequência, estados e atividades | ✅ Concluído |
-| Protótipos | Wireframes e mockups das telas | 🔄 Em andamento |
+| Protótipos | Wireframes e mockups das telas | ✅ Concluído |
 
 ---
 
@@ -194,7 +194,7 @@ cp .env.example .env
 
 - [x] Documento de Requisitos Funcionais e Não Funcionais
 - [x] Diagramas UML (Casos de Uso, Classes, Sequência)
-- [ ] Protótipos / Wireframes
+- [x] Protótipos / Wireframes
 - [ ] Configuração do ambiente de desenvolvimento
 - [ ] Implementação do módulo de autenticação (RF01–RF04)
 - [ ] Implementação das funcionalidades de experiência (RF05–RF11)
