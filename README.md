@@ -5,7 +5,7 @@
 <img src="https://img.shields.io/badge/Versão-1.0.0-blue?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Licença-MIT-green?style=for-the-badge" />
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&color=A78BFA&center=true&vCenter=true&width=435&lines=Sua+Experiência⚽!;Sua+Copa!🏆;Seu+Diário!📸;+new+%F0%9F%9A%80)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&color=A78BFA&center=true&vCenter=true&width=435&lines=Sua+Experiência!⚽;Sua+Copa!🏆;Seu+Diário!📸;)](https://git.io/typing-svg)
 
 **Aplicação web para registro de experiências pessoais durante a Copa do Mundo 2026**
 
