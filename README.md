@@ -9,7 +9,7 @@
 
 **Aplicação web para registro de experiências pessoais durante a Copa do Mundo 2026**
 
-[📋 Documentação](#-documentação) • [🚀 Funcionalidades](#-funcionalidades) • [🛠️ Tecnologias](#%EF%B8%8F-tecnologias) • [▶️ Como Rodar](#%EF%B8%8F-como-rodar) • [👥 Equipe](#-equipe)
+📋 Documentação • 🚀 Funcionalidades • 🛠️ Tecnologias • ▶️ Como Rodar • 👥 Equipe
 
 </div>
 
