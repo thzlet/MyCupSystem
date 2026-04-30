@@ -106,10 +106,10 @@ Cada jogo tem uma história e essa história merece ser contada por quem a viveu
 [ a definir ]
 
 # Backend
-[ a definir ]
+C#
 
 # Banco de Dados
-[ a definir ]
+MySQL
 
 # Autenticação
 [ a definir ]
