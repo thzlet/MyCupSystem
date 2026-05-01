@@ -15,5 +15,16 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  api-diariocopa:
+    build: 
+      context: ./DiarioCopaApi
+    container_name: diario_copa_api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-db
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=db_diariocopa;Uid=user_copa;Pwd=senha_copa_123;
+      - ASPNETCORE_ENVIRONMENT=Development
 volumes:
   mysql_data:
