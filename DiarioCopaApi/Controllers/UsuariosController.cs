@@ -9,7 +9,7 @@ namespace DiarioCopaApi.Controllers;
 [ApiController]
 public class UsuariosController : ControllerBase
 {
-    public readonly DiarioCopaContext _context;
+    private readonly DiarioCopaContext _context;
 
     public UsuariosController(DiarioCopaContext context)
     {
