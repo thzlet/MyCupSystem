@@ -195,7 +195,7 @@ cp .env.example .env
 - [x] Documento de Requisitos Funcionais e Não Funcionais
 - [x] Diagramas UML (Casos de Uso, Classes, Sequência)
 - [x] Protótipos / Wireframes
-- [ ] Configuração do ambiente de desenvolvimento
+- [x] Configuração do ambiente de desenvolvimento
 - [ ] Implementação do módulo de autenticação (RF01–RF04)
 - [ ] Implementação das funcionalidades de experiência (RF05–RF11)
 - [ ] Implementação das funcionalidades de consulta (RF12–RF15)
