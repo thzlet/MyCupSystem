@@ -2,7 +2,10 @@ using DiarioCopaApi.Data;
 using DiarioCopaApi.Models;
 using DiarioCopaApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using DiarioCopaApi.Services;
+using System.Reflection.Metadata;
+using System.Security.Claims;
 
 namespace DiarioCopaApi.Controllers;
 
@@ -45,21 +48,44 @@ public class UsuariosController : ControllerBase
     [HttpPost("login")]
     public IActionResult EfetuarLogin([FromBody] EfetuarLoginDto dto)
     {
-        if(!ModelState.IsValid)
+        if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        
+
         var usuario = _context.Usuarios.FirstOrDefault(u => u.Email == dto.Email.Trim().ToLowerInvariant());
-        
-        if(usuario == null || !BCrypt.Net.BCrypt.Verify(dto.Senha, usuario.HashSenha))
+
+        if (usuario == null || !BCrypt.Net.BCrypt.Verify(dto.Senha, usuario.HashSenha))
             return Unauthorized(new { mensagem = "E-mail ou senha inválidos." });
-        
+
         var tokenString = _tokenService.GerarToken(usuario);
 
-        return Ok(new 
-        { 
-            mensagem = "Login realizado com sucesso!", 
+        return Ok(new
+        {
+            mensagem = "Login realizado com sucesso!",
             token = tokenString,
             usuario = new { usuario.IdUsuario, usuario.Nome }
         });
     }
+
+    [HttpPut("alterar-senha")]
+    [Authorize] 
+    public IActionResult AlterarSenha([FromBody] AlterarSenhaDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var idUsuario = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
+        if (usuario == null)
+            return NotFound(new { mensagem = "Usuário não encontrado." });
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.SenhaAtual, usuario.HashSenha))
+            return Unauthorized(new { mensagem = "Senha atual incorreta." });
+
+        usuario.HashSenha = BCrypt.Net.BCrypt.HashPassword(dto.NovaSenha);
+        _context.SaveChanges();
+
+        return Ok(new { mensagem = "Senha alterada com sucesso." });
+
+    } 
 }

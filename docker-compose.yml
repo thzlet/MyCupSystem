@@ -26,5 +26,6 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=db_diariocopa;Uid=user_copa;Pwd=senha_copa_123;
       - ASPNETCORE_ENVIRONMENT=Development
+      - Jwt__Key=${JWT_KEY}
 volumes:
   mysql_data:
