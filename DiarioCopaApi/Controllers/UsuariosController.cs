@@ -2,6 +2,7 @@ using DiarioCopaApi.Data;
 using DiarioCopaApi.Models;
 using DiarioCopaApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using DiarioCopaApi.Services;
 
 namespace DiarioCopaApi.Controllers;
 
@@ -10,10 +11,12 @@ namespace DiarioCopaApi.Controllers;
 public class UsuariosController : ControllerBase
 {
     private readonly DiarioCopaContext _context;
+    private readonly TokenService _tokenService;
 
-    public UsuariosController(DiarioCopaContext context)
+    public UsuariosController(DiarioCopaContext context, TokenService tokenService)
     {
         _context = context;
+        _tokenService = tokenService;
     }
 
     [HttpPost("criar")]
@@ -37,5 +40,26 @@ public class UsuariosController : ControllerBase
 
         return CreatedAtAction(nameof(CriarConta), new { id = novoUsuario.IdUsuario},
         new { mensagem = "Conta criada com sucesso!", id = novoUsuario.IdUsuario});
+    }
+
+    [HttpPost("login")]
+    public IActionResult EfetuarLogin([FromBody] EfetuarLoginDto dto)
+    {
+        if(!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
+        var usuario = _context.Usuarios.FirstOrDefault(u => u.Email == dto.Email.Trim().ToLowerInvariant());
+        
+        if(usuario == null || !BCrypt.Net.BCrypt.Verify(dto.Senha, usuario.HashSenha))
+            return Unauthorized(new { mensagem = "E-mail ou senha inválidos." });
+        
+        var tokenString = _tokenService.GerarToken(usuario);
+
+        return Ok(new 
+        { 
+            mensagem = "Login realizado com sucesso!", 
+            token = tokenString,
+            usuario = new { usuario.IdUsuario, usuario.Nome }
+        });
     }
 }
