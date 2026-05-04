@@ -6,10 +6,10 @@ services:
     container_name: diario_copa_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: db_diariocopa
-      MYSQL_USER: user_copa
-      MYSQL_PASSWORD: senha_copa_123
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "11000:3306"
     volumes:
@@ -24,7 +24,7 @@ services:
     depends_on:
       - mysql-db
     environment:
-      - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=db_diariocopa;Uid=user_copa;Pwd=senha_copa_123;
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=db_diariocopa;Uid=${DB_USER};Pwd=${DB_PASSWORD};
       - ASPNETCORE_ENVIRONMENT=Development
       - Jwt__Key=${JWT_KEY}
 volumes:
