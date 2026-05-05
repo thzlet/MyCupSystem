@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diário Digital da Copa 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+
+  <!-- ── TELA 1: LOGIN / CADASTRO ── -->
+  <!--
+    display é controlado por js/auth.js via classe .active
+    visível por padrão (classe active já aplicada)
+  -->
+  <div id="page-auth" class="page active">
+
+    <!-- fundo (position:absolute, relativo ao page-auth) -->
+    <div class="auth-bg">
+      <div class="auth-bg-grid"></div>
+      <div class="auth-bg-circle c1"></div>
+      <div class="auth-bg-circle c2"></div>
+    </div>
+
+    <!-- card centralizado pelo flexbox do page-auth -->
+    <div class="auth-card">
+
+      <div class="auth-logo">
+        <span class="auth-logo-ball">⚽</span>
+        <div>
+          <div class="auth-logo-name">DIÁRIO COPA</div>
+          <div class="auth-logo-year">2026</div>
+        </div>
+      </div>
+
+      <!-- abas: chama switchTab() definida em js/auth.js -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login"    onclick="switchTab('login')">Entrar</button>
+        <button class="auth-tab"        id="tab-register" onclick="switchTab('register')">Criar conta</button>
+      </div>
+
+      <!-- FORMULÁRIO DE LOGIN
+           chama: handleLogin(event) em js/auth.js
+           endpoint: POST /api/usuarios/login
+           body: { email, senha }
+           retorno: { token, usuario: { idUsuario, nome } }
+      -->
+      <form class="auth-form active" id="form-login" onsubmit="handleLogin(event)" novalidate>
+        <div class="auth-field">
+          <label for="login-email">E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email" />
+        </div>
+        <div class="auth-field">
+          <label for="login-password">Senha</label>
+          <div class="input-wrap">
+            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" />
+            <button type="button" class="toggle-pw" onclick="togglePw('login-password', this)" aria-label="Mostrar senha">👁</button>
+          </div>
+        </div>
+        <div class="auth-error hide" id="login-error" role="alert"></div>
+        <button type="submit" class="btn-auth" id="btn-login">
+          <span class="btn-label">Entrar</span>
+          <span class="btn-loading hide" aria-live="polite">aguarde…</span>
+        </button>
+      </form>
+
+      <!-- FORMULÁRIO DE CADASTRO
+           chama: handleRegister(event) em js/auth.js
+           endpoint: POST /api/usuarios/criar
+           body: { nome, email, senha }
+           retorno 201: { mensagem, id }
+           erro 409: e-mail já cadastrado
+      -->
+      <form class="auth-form" id="form-register" onsubmit="handleRegister(event)" novalidate>
+        <div class="auth-field">
+          <label for="reg-nome">Nome</label>
+          <input type="text" id="reg-nome" placeholder="Seu nome" required autocomplete="name" />
+        </div>
+        <div class="auth-field">
+          <label for="reg-email">E-mail</label>
+          <input type="email" id="reg-email" placeholder="seu@email.com" required autocomplete="email" />
+        </div>
+        <div class="auth-field">
+          <label for="reg-senha">Senha</label>
+          <div class="input-wrap">
+            <input type="password" id="reg-senha" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password" />
+            <button type="button" class="toggle-pw" onclick="togglePw('reg-senha', this)" aria-label="Mostrar senha">👁</button>
+          </div>
+        </div>
+        <div class="auth-field">
+          <label for="reg-confirma">Confirmar senha</label>
+          <div class="input-wrap">
+            <input type="password" id="reg-confirma" placeholder="Repita a senha" required autocomplete="new-password" />
+            <button type="button" class="toggle-pw" onclick="togglePw('reg-confirma', this)" aria-label="Mostrar senha">👁</button>
+          </div>
+        </div>
+        <div class="auth-error hide" id="register-error" role="alert"></div>
+        <button type="submit" class="btn-auth" id="btn-register">
+          <span class="btn-label">Criar conta</span>
+          <span class="btn-loading hide" aria-live="polite">aguarde…</span>
+        </button>
+      </form>
+
+    </div><!-- /auth-card -->
+  </div><!-- /page-auth -->
+
+
+  <!-- ── TELA 2: APP PRINCIPAL ── -->
+
+  <div id="page-app" class="page">
+    <p style="padding:40px;font-family:sans-serif;color:#0A2240">
+      ✅ Login efetuado!<code>#page-app</code>.
+    </p>
+  </div>
+
+
+  <!--
+    SCRIPTS
+    1. api.js   → define apiFetch() e API_BASE_URL
+    2. auth.js  → usa apiFetch(), então precisa vir depois
+  -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
