@@ -17,7 +17,7 @@
 
 /* ── INICIALIZAÇÃO ─────────────────────────────────────────── */
 
-// se já existe um token salvo e ainda é válido, vai direto para o app
+// se já existe um token salvo e ainda é válido, vai direto pro app
 document.addEventListener('DOMContentLoaded', () => {
   if (getToken()) {
     showPage('app');
@@ -86,8 +86,42 @@ function saveToken(token, usuario) {
   localStorage.setItem('token',   token);
   localStorage.setItem('usuario', JSON.stringify(usuario));
 }
+/**
+ * decodifica o payload do JWT e verifica se ainda está dentro do prazo
+ * não depende de chamada à API, lê o campo `exp` embutido no token
+ * retorna true se válido, false se expirado ou malformado
+ */
+function isTokenValid() {
+  const token = localStorage.getItem('token');
+  if (!token) return false;
 
+  try {
+    // JWT = header.payload.signature 
+    const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) return false;
+
+    // base64url → base64 normal → string JSON
+    const json    = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+    const payload = JSON.parse(json);
+
+    if (!payload.exp) return true; // token sem expiração: considera válido
+
+    // payload.exp está em segundos; Date.now() em milissegundos
+    return payload.exp * 1000 > Date.now();
+  } catch {
+    return false; // token malformado, trata como inválido
+  }
+}
+/**
+ * retorna o token apenas se ele ainda for válido.
+ * se estiver expirado, limpa o localStorage e retorna null.
+ */
 function getToken() {
+  if (!isTokenValid()) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    return null;
+  }
   return localStorage.getItem('token');
 }
 
@@ -95,10 +129,9 @@ function getUsuario() {
   const raw = localStorage.getItem('usuario');
   return raw ? JSON.parse(raw) : null;
 }
-
 /**
- * Logout: remove o token e volta para a tela de login.
- * Chame esta função no botão "Sair" do app:
+ * logout: remove o token e volta para a tela de login.
+ * chame esta função no botão "sair" do app:
  *   <button onclick="logout()">Sair</button>
  */
 function logout() {
@@ -172,9 +205,11 @@ async function handleRegister(event) {
     if (ok) {
       // conta criada! leva para o login com mensagem de sucesso
       switchTab('login');
+
       // preenche o e-mail automaticamente para facilitar
       document.getElementById('login-email').value = email;
-      // mostra mensagem de sucesso no campo de erro do login (com estilo diferente)
+
+      // mostra mensagem de sucesso no campo de erro do login 
       const el = document.getElementById('login-error');
       el.textContent = '✅ Conta criada! Agora é só entrar.';
       el.classList.remove('hide');
