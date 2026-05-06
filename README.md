@@ -114,7 +114,7 @@ C#
 MySQL
 
 # Autenticação
-[ a definir ]
+JSON WEB TOKEN
 
 # API externa (dados da Copa)
 [ a definir ]
