@@ -114,7 +114,11 @@ C#
 MySQL
 
 # Autenticação
+<<<<<<< HEAD
 JSON Web Token
+=======
+JSON WEB TOKEN
+>>>>>>> 85101e1896bf3abc2f9aeb0dff5164398b1ef765
 
 # API externa (dados da Copa)
 [ a definir ]

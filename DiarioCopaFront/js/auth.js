@@ -96,7 +96,7 @@ function isTokenValid() {
   if (!token) return false;
 
   try {
-    // JWT = header.payload.signature 
+    // JWT = header.payload.signature  
     const payloadBase64 = token.split('.')[1];
     if (!payloadBase64) return false;
 
