@@ -103,7 +103,9 @@ Cada jogo tem uma história e essa história merece ser contada por quem a viveu
 
 ```bash
 # Frontend
-[ a definir ]
+HTML
+CSS
+JAVASCRIPT
 
 # Backend
 C#
@@ -131,15 +133,24 @@ diario-digital-copa-2026/
 │   ├── requisitos.pdf          # Documento de requisitos (este arquivo)
 │   └── diagramas/              # Diagramas UML e de fluxo
 │
-├── 📁 frontend/                # Código da interface do usuário
-│
+├── 📁 DiarioCopaFront/                # Código da interface do usuário
+│   ├── 📁 css
+│   └── auth.css        
+│   ├── 📁 js
+│   └── api.js
+│   └── auth.js  
+│   ├── index.html
+         
 ├── 📁 backend/                 # API e lógica de negócio
 │
 ├── 📁 database/                # Scripts e migrações do banco de dados
 │
-├── 📄 .env.example             # Variáveis de ambiente (exemplo)
+
 ├── 📄 .gitignore
-└── 📄 README.md
+├── 📄 README.md
+├── 📄 MyCupSystem.sln
+├── 📄 docker-compose.yml
+├── 📄 global.json
 ```
 
 ---
@@ -196,7 +207,7 @@ cp .env.example .env
 - [x] Diagramas UML (Casos de Uso, Classes, Sequência)
 - [x] Protótipos / Wireframes
 - [x] Configuração do ambiente de desenvolvimento
-- [ ] Implementação do módulo de autenticação (RF01–RF04)
+- [x] Implementação do módulo de autenticação (RF01–RF04)
 - [ ] Implementação das funcionalidades de experiência (RF05–RF11)
 - [ ] Implementação das funcionalidades de consulta (RF12–RF15)
 - [ ] Testes e validação
