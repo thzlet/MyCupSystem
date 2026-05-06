@@ -118,48 +118,74 @@ MySQL
 
 # API externa (dados da Copa)
 [ a definir ]
+
+
 ```
-
 ---
-
 ## Estrutura do Projeto
-
-> ⚠️ *A estrutura de pastas será detalhada ao longo do desenvolvimento.*
-
 ```
-diario-digital-copa-2026/
+MyCupSystem/
 │
-├── 📁 docs/                    # Documentação do projeto
-│   ├── requisitos.pdf          # Documento de requisitos (este arquivo)
-│   └── diagramas/              # Diagramas UML e de fluxo
+├── 📁 docs/                            
+│   ├── requisitos.pdf
+│   └── 📁 diagramas/                     
 │
-├── 📁 DiarioCopaFront/                # Código da interface do usuário
-│   ├── 📁 css
-│   └── auth.css        
-│   ├── 📁 js
-│   └── api.js
-│   └── auth.js  
+│
+├── 📁 DiarioCopaFront/                             
 │   ├── index.html
-         
-├── 📁 backend/                 # API e lógica de negócio
+│   └── 📁 css/
+    │   └── auth.css 
+│   └── 📁 js/
+    │   └── auth.js
+    │   └── api.js        
 │
-├── 📁 database/                # Scripts e migrações do banco de dados
-│
-
-├── 📄 .gitignore
-├── 📄 README.md
-├── 📄 MyCupSystem.sln
-├── 📄 docker-compose.yml
-├── 📄 global.json
+└── 📁 DiarioCopaApi/              
+    │
+    ├── 📁 Controllers/
+    │   └── UsuariosController.cs        
+    │
+    ├── 📁 DTOs/
+    │   ├── AlterarSenhaDto.cs
+    │   ├── CriarContaDto.cs
+    │   └── EfetuarLoginDto.cs
+    │
+    ├── 📁 Data/
+    │   └── DiarioCopaContext.cs       
+    │
+    ├── 📁 Migrations/                    
+    │   ├── 20260501001740_InitialCreate.cs
+    │   ├── 20260501001740_InitialCreate.Designer.cs
+    │   └── DiarioCopaContextModelSnapshot.cs
+    │
+    ├── 📁 Models/
+    │   ├── 📁 Enums/
+    │   │   ├── Nota.cs
+    │   │   └── Sentimento.cs
+    │   ├── Experiencia.cs
+    │   ├── Jogo.cs
+    │   ├── JogoFavorito.cs
+    │   ├── ListaJogos.cs
+    │   └── Usuario.cs
+    │
+    ├── 📁 Properties/
+    │   └── launchSettings.json          
+    │
+    ├── 📁 Services/
+    │   └── TokenService.cs              
+    │
+    ├── Dockerfile                     
+    ├── Program.cs                        
+    ├── appsettings.json               
+    ├── DiarioCopaApi.csproj             
+    └── DiarioCopaApi.http               
 ```
-
 ---
+
 
 ## Como Rodar
-
 > ⚠️ *As instruções completas de instalação e execução serão adicionadas ao longo do desenvolvimento.*
 
-```bash
+```
 # 1. Clone o repositório
 git clone https://github.com/seu-usuario/diario-digital-copa-2026.git
 
