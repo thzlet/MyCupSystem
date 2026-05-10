@@ -1,11 +1,8 @@
-/* ============================================================
-   css/auth.css — Estilos da tela de Login e Cadastro
-   Diário Digital Copa 2026
-   ============================================================ */
+/* ========== AUTH PAGES — DIÁRIO DIGITAL COPA 2026 ========== */
+/* Importar no <head> junto com landing.css ou separadamente      */
 
-/* ---------- VARIÁVEIS GLOBAIS ---------- */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* ---------- RESET DE VARIÁVEIS (caso seja página isolada) ------ */
+/* Se landing.css já estiver carregado, este bloco é redundante    */
 :root {
   --red:        #C8102E;
   --red-dk:     #A00D23;
@@ -30,228 +27,239 @@
   --font-body:    'DM Sans', sans-serif;
 }
 
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-body);
-  background: var(--cream);
+  background: var(--blue);
   color: var(--text);
   overflow-x: hidden;
+  min-height: 100vh;
 }
 button { cursor: pointer; font-family: var(--font-body); }
 a { text-decoration: none; color: inherit; }
 
-/* ---------- ROTEADOR DE PÁGINAS ----------
-   .page       = oculto por padrão
-   .page.active = visível
-   CORREÇÃO: cada tipo de página define seu próprio display
-   dentro do seletor .active para evitar conflito
-*/
-.page { display: none; }
+/* ---------- SCROLLBAR ---------- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--blue); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
 
-/* auth usa flex para centralizar o card verticalmente */
-#page-auth.active {
-  display: flex;
+/* ============================================================
+   PAGE WRAPPER
+   ============================================================ */
+.auth-page {
   min-height: 100vh;
+  display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 24px;
-  background: var(--blue);
   overflow: hidden;
+  padding: 40px 20px;
 }
 
-/* app usa block normal */
-#page-app.active {
-  display: block;
-}
-
-/* ttilitário para esconder elementos via JS */
-.hide { display: none !important; }
-
-/* ---------- FUNDO ANIMADO ---------- */
-.auth-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-.auth-bg-grid {
+/* ---------- BACKGROUND TEXTURE ---------- */
+.auth-page::before {
+  content: '';
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-.auth-bg-circle {
-  position: absolute;
-  border-radius: 50%;
+    repeating-linear-gradient(
+      45deg,
+      rgba(201,168,76,0.05) 0,
+      rgba(201,168,76,0.05) 1px,
+      transparent 1px,
+      transparent 40px
+    );
   pointer-events: none;
-  animation: pulse-circle 6s ease-in-out infinite;
-}
-.auth-bg-circle.c1 {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(200,16,46,0.25) 0%, transparent 70%);
-  right: -200px; top: -150px;
-}
-.auth-bg-circle.c2 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
-  left: -100px; bottom: -100px;
-  animation-delay: -3s;
-}
-@keyframes pulse-circle {
-  0%, 100% { transform: scale(1);    opacity: 1;   }
-  50%       { transform: scale(1.08); opacity: 0.7; }
 }
 
-/* ---------- CARD ---------- */
-.auth-card {
-  position: relative;
-  z-index: 1;
-  background: rgba(255,255,255,0.97);
-  border-radius: 24px;
-  padding: 40px 44px 48px;
-  width: 100%;
-  max-width: 440px;
-  box-shadow:
-    0 24px 80px rgba(10,34,64,0.35),
-    0 0 0 1px rgba(255,255,255,0.08);
-  animation: card-in 0.45s cubic-bezier(0.22,1,0.36,1) both;
+/* ---------- DECORATIVE CIRCLES ---------- */
+.auth-circle-1 {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,16,46,0.18) 0%, transparent 70%);
+  top: -160px;
+  right: -200px;
+  pointer-events: none;
 }
-@keyframes card-in {
+
+.auth-circle-2 {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   AUTH CARD
+   ============================================================ */
+.auth-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 44px 40px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  animation: cardIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes cardIn {
   from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ---------- LOGO ---------- */
 .auth-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-.auth-logo-ball {
-  font-size: 32px;
-  line-height: 1;
-}
-.auth-logo-name {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 26px;
   color: var(--blue);
+  text-align: center;
+  margin-bottom: 6px;
   letter-spacing: 1px;
-  line-height: 1;
 }
-.auth-logo-year {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 3px;
-  color: var(--gold);
-  margin-top: 2px;
+.auth-logo .accent { color: var(--red); }
+
+.auth-tagline {
+  font-size: 13px;
+  color: var(--gray);
+  text-align: center;
+  margin-bottom: 28px;
+  font-weight: 300;
+  line-height: 1.5;
 }
 
-/* ---------- ABAS ---------- */
+/* ---------- TABS (login page only) ---------- */
 .auth-tabs {
   display: flex;
-  gap: 4px;
-  background: var(--gray-lt);
+  background: var(--cream);
   border-radius: var(--radius-sm);
   padding: 4px;
   margin-bottom: 28px;
+  gap: 4px;
 }
+
 .auth-tab {
   flex: 1;
-  padding: 9px 0;
-  border: none;
+  padding: 9px;
   border-radius: 6px;
-  font-size: 13.5px;
-  font-weight: 500;
+  border: none;
   background: none;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--gray);
+  cursor: pointer;
   transition: var(--transition);
+  font-family: var(--font-body);
 }
+
 .auth-tab.active {
   background: var(--white);
   color: var(--blue);
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(10,34,64,0.12);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
 }
-.auth-tab:hover:not(.active) { color: var(--blue); }
 
-/* ---------- FORMULÁRIOS ---------- */
+.auth-tab:not(.active):hover {
+  color: var(--blue);
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
 .auth-form {
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 16px;
-  animation: form-in 0.2s ease both;
-}
-.auth-form.active { display: flex; }
-@keyframes form-in {
-  from { opacity: 0; transform: translateX(6px); }
-  to   { opacity: 1; transform: translateX(0);   }
 }
 
-/* ---------- CAMPO ---------- */
-.auth-field {
+.auth-form.hidden {
+  display: none;
+}
+
+/* ---------- FIELD GROUP ---------- */
+.auth-fg {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.auth-field label {
+
+.auth-fg label {
   font-size: 11px;
   font-weight: 700;
+  color: var(--blue);
   text-transform: uppercase;
   letter-spacing: 0.7px;
-  color: var(--blue);
 }
-.auth-field input {
-  border: 1.5px solid rgba(10,34,64,0.14);
+
+.auth-fg input {
+  border: 1.5px solid rgba(10,34,64,0.12);
   border-radius: var(--radius-xs);
-  padding: 11px 13px;
+  padding: 12px 14px;
   font-size: 14px;
   font-family: var(--font-body);
-  background: white;
-  color: var(--text);
   outline: none;
   transition: var(--transition);
-  width: 100%;
+  color: var(--text);
+  background: var(--white);
 }
-.auth-field input:focus {
+
+.auth-fg input::placeholder {
+  color: rgba(10,34,64,0.25);
+}
+
+.auth-fg input:focus {
   border-color: var(--red);
   box-shadow: 0 0 0 3px rgba(200,16,46,0.08);
 }
-.auth-field input.error {
-  border-color: var(--red);
+
+/* Input com ícone de eye (senha) */
+.auth-fg .input-wrap {
+  position: relative;
 }
 
-/* wrapper input + botão olho */
-.input-wrap { position: relative; }
-.input-wrap input { padding-right: 42px; }
-.toggle-pw {
+.auth-fg .input-wrap input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.auth-fg .toggle-pw {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
-  font-size: 16px;
   color: var(--gray);
-  padding: 4px;
-  line-height: 1;
-  transition: var(--transition);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px;
+  transition: color var(--transition);
 }
-.toggle-pw:hover { color: var(--blue); }
 
-/* ---------- MENSAGEM DE ERRO ---------- */
-.auth-error {
-  font-size: 13px;
-  color: var(--red);
-  background: var(--red-lt);
-  border: 1px solid rgba(200,16,46,0.2);
-  border-radius: var(--radius-xs);
-  padding: 10px 13px;
-  line-height: 1.5;
+.auth-fg .toggle-pw:hover { color: var(--blue); }
+
+/* ---------- ESQUECI SENHA ---------- */
+.auth-forgot {
+  text-align: right;
+  margin-top: -8px;
 }
+
+.auth-forgot a {
+  font-size: 12px;
+  color: var(--gray);
+  transition: color var(--transition);
+}
+
+.auth-forgot a:hover { color: var(--red); }
 
 /* ---------- BOTÃO PRINCIPAL ---------- */
 .btn-auth {
@@ -259,29 +267,181 @@ a { text-decoration: none; color: inherit; }
   color: white;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 13px 24px;
+  padding: 14px;
   font-size: 15px;
   font-weight: 600;
   width: 100%;
   margin-top: 4px;
   transition: var(--transition);
-  letter-spacing: 0.3px;
+  font-family: var(--font-body);
+  letter-spacing: 0.2px;
 }
-.btn-auth:hover:not(:disabled) {
+
+.btn-auth:hover {
   background: var(--red-dk);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(200,16,46,0.35);
 }
-.btn-auth:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
+
+.btn-auth:active {
+  transform: translateY(0);
 }
 
-/* ---------- RESPONSIVO ---------- */
+/* ---------- LOADING STATE ---------- */
+.btn-auth.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.btn-auth.loading::after {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- MENSAGEM DE ERRO ---------- */
+.auth-error {
+  background: var(--red-lt);
+  border: 1px solid rgba(200,16,46,0.2);
+  border-radius: var(--radius-xs);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--red-dk);
+  display: none;
+}
+
+.auth-error.visible { display: block; }
+
+/* ---------- MENSAGEM DE SUCESSO ---------- */
+.auth-success {
+  background: #e8f7ee;
+  border: 1px solid rgba(22,163,74,0.25);
+  border-radius: var(--radius-xs);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #16a34a;
+  display: none;
+}
+
+.auth-success.visible { display: block; }
+
+/* ---------- FOOTER DO FORM ---------- */
+.auth-switch {
+  font-size: 12.5px;
+  color: var(--gray);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.auth-switch a,
+.auth-switch button {
+  background: none;
+  border: none;
+  color: var(--red);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-body);
+  transition: color var(--transition);
+}
+
+.auth-switch a:hover,
+.auth-switch button:hover { color: var(--red-dk); text-decoration: underline; }
+
+/* ---------- DIVIDER ---------- */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(10,34,64,0.1);
+}
+
+.auth-divider span {
+  font-size: 11px;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+/* ---------- TERMOS (cadastro) ---------- */
+.auth-terms {
+  font-size: 11.5px;
+  color: var(--gray);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.auth-terms a {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+/* ============================================================
+   BOTÃO VOLTAR (canto superior esquerdo)
+   ============================================================ */
+.auth-back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(255,255,255,0.10);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.auth-back-btn:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+/* ============================================================
+   CAMPOS LADO A LADO (senha + confirmar — desktop)
+   ============================================================ */
+.fields-row {
+  display: flex;
+  gap: 12px;
+}
+
+.fields-row .auth-fg {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 520px) {
+  .fields-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-card {
-    padding: 32px 24px 40px;
-    border-radius: 20px;
+    padding: 32px 24px;
+    border-radius: 16px;
   }
 }

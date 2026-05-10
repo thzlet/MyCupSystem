@@ -1,237 +1,218 @@
+/**
+ * auth.js — Diário Digital Copa 2026
+ * Controla as telas de Login e Cadastro.
+ *
+ * Depende de: auth.css
+ * Referenciado pelo href dos botões ENTRAR / CRIAR CONTA na landing (index.html)
+ *
+ * URL de uso:
+ *   login.html          → abre aba "Entrar" por padrão
+ *   login.html?tab=register → abre aba "Criar conta"
+ */
+
 /* ============================================================
-   js/auth.js — Login, Cadastro, Token JWT e navegação de telas
-   Diário Digital Copa 2026
-   ============================================================
-
-   ENDPOINTS USADOS:
-     POST /api/usuarios/login
-       body:    { email, senha }
-       sucesso: { mensagem, token, usuario: { idUsuario, nome } }
-       erro:    401 { mensagem: "E-mail ou senha inválidos." }
-
-     POST /api/usuarios/criar
-       body:    { nome, email, senha }
-       sucesso: 201 { mensagem, id }
-       erro:    409 { mensagem: "Este e-mail já está cadastrado." }
-*/
-
-/* ── INICIALIZAÇÃO ─────────────────────────────────────────── */
-
-// se já existe um token salvo e ainda é válido, vai direto pro app
+   INICIALIZAÇÃO
+   ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  if (getToken()) {
-    showPage('app');
-  }
+  // lê parâmetro de URL para determinar aba inicial
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab') || 'login';
+  switchTab(tab);
+
+  // foca o primeiro campo visível
+  const firstInput = document.querySelector('.auth-form:not(.hidden) input');
+  if (firstInput) firstInput.focus();
 });
 
-/* ── NAVEGAÇÃO ENTRE TELAS ─────────────────────────────────── */
-
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(`page-${page}`).classList.add('active');
-  window.scrollTo(0, 0);
-}
-
-/* ── ABAS LOGIN / CADASTRO ─────────────────────────────────── */
-
+/* ============================================================
+   TROCAR ABA (login ↔ register)
+   ============================================================ */
 function switchTab(tab) {
-  // atualiza botões de aba
-  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  const tabLogin    = document.getElementById('tab-login');
+  const tabRegister = document.getElementById('tab-register');
+  const formLogin   = document.getElementById('form-login');
+  const formRegister= document.getElementById('form-register');
 
-  // mostra o formulário correto
-  document.getElementById('form-login').classList.toggle('active',    tab === 'login');
-  document.getElementById('form-register').classList.toggle('active', tab === 'register');
+  if (!tabLogin || !tabRegister || !formLogin || !formRegister) return;
 
-  // limpa erros ao trocar de aba
-  hideError('login-error');
-  hideError('register-error');
+  const isLogin = tab === 'login';
+
+  tabLogin.classList.toggle('active', isLogin);
+  tabRegister.classList.toggle('active', !isLogin);
+  formLogin.classList.toggle('hidden', !isLogin);
+  formRegister.classList.toggle('hidden', isLogin);
+
+  // atualiza URL sem recarregar (para bookmarks/back button)
+  const url = new URL(window.location);
+  url.searchParams.set('tab', tab);
+  window.history.replaceState({}, '', url);
+
+  // foca primeiro campo da aba ativa
+  const firstInput = document.querySelector(`#${isLogin ? 'form-login' : 'form-register'} input`);
+  if (firstInput) setTimeout(() => firstInput.focus(), 50);
+
+  // limpa mensagens de erro ao trocar de aba
+  clearMessages();
 }
 
-/* ── TOGGLE MOSTRAR/ESCONDER SENHA ─────────────────────────── */
-
-function togglePw(inputId, btn) {
+/* ============================================================
+   MOSTRAR / OCULTAR SENHA
+   ============================================================ */
+function togglePassword(inputId) {
   const input = document.getElementById(inputId);
-  const isText = input.type === 'text';
-  input.type = isText ? 'password' : 'text';
-  btn.textContent = isText ? '👁' : '🙈';
-}
+  const btn   = input?.parentElement?.querySelector('.toggle-pw');
+  if (!input) return;
 
-/* ── HELPERS DE UI ─────────────────────────────────────────── */
-
-function showError(id, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.classList.remove('hide');
-}
-
-function hideError(id) {
-  const el = document.getElementById(id);
-  el.classList.add('hide');
-  el.textContent = '';
-}
-
-function setLoading(btnId, loading) {
-  const btn   = document.getElementById(btnId);
-  const label = btn.querySelector('.btn-label');
-  const spin  = btn.querySelector('.btn-loading');
-  btn.disabled = loading;
-  label.classList.toggle('hide', loading);
-  spin.classList.toggle('hide', !loading);
-}
-
-/* ── ARMAZENAMENTO DO TOKEN ────────────────────────────────── */
-
-function saveToken(token, usuario) {
-  localStorage.setItem('token',   token);
-  localStorage.setItem('usuario', JSON.stringify(usuario));
-}
-/**
- * decodifica o payload do JWT e verifica se ainda está dentro do prazo
- * não depende de chamada à API, lê o campo `exp` embutido no token
- * retorna true se válido, false se expirado ou malformado
- */
-function isTokenValid() {
-  const token = localStorage.getItem('token');
-  if (!token) return false;
-
-  try {
-    // JWT = header.payload.signature  
-    const payloadBase64 = token.split('.')[1];
-    if (!payloadBase64) return false;
-
-    // base64url → base64 normal → string JSON
-    const json    = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
-    const payload = JSON.parse(json);
-
-    if (!payload.exp) return true; // token sem expiração: considera válido
-
-    // payload.exp está em segundos; Date.now() em milissegundos
-    return payload.exp * 1000 > Date.now();
-  } catch {
-    return false; // token malformado, trata como inválido
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (btn) btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    if (btn) btn.textContent = '👁';
   }
 }
-/**
- * retorna o token apenas se ele ainda for válido.
- * se estiver expirado, limpa o localStorage e retorna null.
- */
-function getToken() {
-  if (!isTokenValid()) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    return null;
-  }
-  return localStorage.getItem('token');
+
+/* ============================================================
+   VALIDAÇÃO
+   ============================================================ */
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function getUsuario() {
-  const raw = localStorage.getItem('usuario');
-  return raw ? JSON.parse(raw) : null;
-}
-/**
- * logout: remove o token e volta para a tela de login.
- * chame esta função no botão "sair" do app:
- *   <button onclick="logout()">Sair</button>
- */
-function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('usuario');
-  showPage('auth');
+function validatePassword(pw) {
+  return pw.length >= 8;
 }
 
-/* ── LOGIN ─────────────────────────────────────────────────── */
+/* ============================================================
+   MENSAGENS DE FEEDBACK
+   ============================================================ */
+function showError(formId, message) {
+  const el = document.getElementById(`${formId}-error`);
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('visible');
+}
 
-async function handleLogin(event) {
+function showSuccess(formId, message) {
+  const el = document.getElementById(`${formId}-success`);
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('visible');
+}
+
+function clearMessages() {
+  document.querySelectorAll('.auth-error, .auth-success').forEach(el => {
+    el.classList.remove('visible');
+    el.textContent = '';
+  });
+}
+
+/* ============================================================
+   SUBMIT — LOGIN
+   ============================================================ */
+function handleLogin(event) {
   event.preventDefault();
-  hideError('login-error');
-  setLoading('btn-login', true);
+  clearMessages();
 
-  const email = document.getElementById('login-email').value.trim();
-  const senha = document.getElementById('login-password').value;
+  const email = document.getElementById('login-email')?.value.trim();
+  const password = document.getElementById('login-password')?.value;
+  const btn = document.getElementById('btn-login');
 
-  try {
-    // POST /api/usuarios/login
-    const { ok, status, data } = await apiFetch('/api/usuarios/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, senha }),
-    });
+  // validações básicas
+  if (!email) { showError('login', 'Informe seu e-mail.'); return; }
+  if (!validateEmail(email)) { showError('login', 'E-mail inválido.'); return; }
+  if (!password) { showError('login', 'Informe sua senha.'); return; }
 
-    if (ok) {
-      // salva token e dados do usuário
-      saveToken(data.token, data.usuario);
-      showPage('app');
-    } else if (status === 401) {
-      showError('login-error', data?.mensagem || 'E-mail ou senha inválidos.');
-    } else {
-      showError('login-error', 'Erro inesperado. Tente novamente.');
+  // estado de loading
+  btn.classList.add('loading');
+  btn.textContent = 'Entrando';
+
+  // -------------------------------------------------------
+  // INTEGRAÇÃO COM BACK-END
+  // SUBSTITUI AQUI GALERA !!!!!!!!!!!!!!
+  // tipo:
+  //   const res = await fetch('/api/auth/login', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ email, password })
+  //   });
+  //   if (!res.ok) { const err = await res.json(); showError('login', err.message); return; }
+  //   const { token } = await res.json();
+  //   localStorage.setItem('auth_token', token);
+  //   window.location.href = 'app.html';
+  // -------------------------------------------------------
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.textContent = 'Entrar no Diário';
+
+    // simula credenciais inválidas para demonstração
+    if (password === 'errado') {
+      showError('login', 'E-mail ou senha incorretos. Tente novamente.');
+      return;
     }
 
-  } catch (err) {
-    // erro de rede (API offline, CORS, etc.)
-    showError('login-error', 'Não foi possível conectar à API. Verifique se o servidor está rodando.');
-    console.error('[auth] Erro de rede no login:', err);
-  } finally {
-    setLoading('btn-login', false);
-  }
+    // sucesso: redireciona para o app
+    window.location.href = 'app.html'; // ajustar para a rota real
+  }, 1200);
 }
 
-/* ── CADASTRO ──────────────────────────────────────────────── */
-
-async function handleRegister(event) {
+/* ============================================================
+   SUBMIT — CADASTRO
+   ============================================================ */
+function handleRegister(event) {
   event.preventDefault();
-  hideError('register-error');
+  clearMessages();
 
-  const nome     = document.getElementById('reg-nome').value.trim();
-  const email    = document.getElementById('reg-email').value.trim();
-  const senha    = document.getElementById('reg-senha').value;
-  const confirma = document.getElementById('reg-confirma').value;
+  const name     = document.getElementById('reg-name')?.value.trim();
+  const email    = document.getElementById('reg-email')?.value.trim();
+  const password = document.getElementById('reg-password')?.value;
+  const confirm  = document.getElementById('reg-confirm')?.value;
+  const btn      = document.getElementById('btn-register');
 
-  // validação local: senhas conferem?
-  if (senha !== confirma) {
-    showError('register-error', 'As senhas não coincidem.');
+  // validações
+  if (!name || name.length < 2) { showError('register', 'Informe seu nome completo.'); return; }
+  if (!validateEmail(email))     { showError('register', 'E-mail inválido.'); return; }
+  if (!validatePassword(password)) { showError('register', 'A senha deve ter no mínimo 8 caracteres.'); return; }
+  if (password !== confirm)       { showError('register', 'As senhas não coincidem.'); return; }
+
+  // estado de loading
+  btn.classList.add('loading');
+  btn.textContent = 'Criando conta';
+
+  // -------------------------------------------------------
+  // INTEGRAÇÃO COM BACK-END
+  // SUBSTITUI AQUI TAMBEM GALERA !!!!!!!!!!!!!!!
+  // tipo:
+  //   const res = await fetch('/api/auth/register', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ name, email, password })
+  //   });
+  //   if (!res.ok) { const err = await res.json(); showError('register', err.message); return; }
+  //   showSuccess('register', 'Conta criada! Redirecionando...');
+  //   setTimeout(() => window.location.href = 'app.html', 1500);
+  // -------------------------------------------------------
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.textContent = 'Criar minha conta';
+    showSuccess('register', 'Conta criada com sucesso! Redirecionando...');
+    setTimeout(() => window.location.href = 'app.html', 1500); // ajuste para a rota real
+  }, 1400);
+}
+
+/* ============================================================
+   LINK "ESQUECI MINHA SENHA" (placeholder)
+   ============================================================ */
+function handleForgotPassword(event) {
+  event.preventDefault();
+  const email = document.getElementById('login-email')?.value.trim();
+
+  if (!email || !validateEmail(email)) {
+    showError('login', 'Informe seu e-mail antes de solicitar a redefinição.');
+    document.getElementById('login-email')?.focus();
     return;
   }
 
-  setLoading('btn-register', true);
-
-  try {
-    // POST /api/usuarios/criar
-    const { ok, status, data } = await apiFetch('/api/usuarios/criar', {
-      method: 'POST',
-      body: JSON.stringify({ nome, email, senha }),
-    });
-
-    if (ok) {
-      // conta criada! leva para o login com mensagem de sucesso
-      switchTab('login');
-
-      // preenche o e-mail automaticamente para facilitar
-      document.getElementById('login-email').value = email;
-
-      // mostra mensagem de sucesso no campo de erro do login 
-      const el = document.getElementById('login-error');
-      el.textContent = '✅ Conta criada! Agora é só entrar.';
-      el.classList.remove('hide');
-      el.style.background = '#e8f5e9';
-      el.style.color = '#2e7d32';
-      el.style.borderColor = 'rgba(46,125,50,0.25)';
-    } else if (status === 409) {
-      showError('register-error', data?.mensagem || 'Este e-mail já está cadastrado.');
-    } else if (status === 400) {
-      // erros de validação do ModelState
-      const erros = data?.errors
-        ? Object.values(data.errors).flat().join(' ')
-        : data?.mensagem || 'Dados inválidos.';
-      showError('register-error', erros);
-    } else {
-      showError('register-error', 'Erro inesperado. Tente novamente.');
-    }
-
-  } catch (err) {
-    showError('register-error', 'Não foi possível conectar à API. Verifique se o servidor está rodando.');
-    console.error('[auth] Erro de rede no cadastro:', err);
-  } finally {
-    setLoading('btn-register', false);
-  }
+  // TODO: chamar endpoint /api/auth/forgot-password
+  showSuccess('login', `Link de redefinição enviado para ${email}. Verifique sua caixa de entrada.`);
 }
