@@ -1,128 +1,258 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Diário Digital da Copa 2026</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/auth.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diário Digital da Copa 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/landing.css" />
 </head>
 <body>
 
-  <!-- ── TELA 1: LOGIN / CADASTRO ── -->
-  <!--
-    display é controlado por js/auth.js via classe .active
-    visível por padrão (classe active já aplicada)
-  -->
-  <div id="page-auth" class="page active">
-
-    <!-- fundo (position:absolute, relativo ao page-auth) -->
-    <div class="auth-bg">
-      <div class="auth-bg-grid"></div>
-      <div class="auth-bg-circle c1"></div>
-      <div class="auth-bg-circle c2"></div>
+<!-- NAV -->
+<nav class="landing-nav">
+  <div class="container">
+    <div class="logo">
+      <span class="ball">⚽</span>
+      <div>
+        DIÁRIO DIGITAL
+        <span class="logo-sub">Copa 2026</span>
+      </div>
     </div>
-
-    <!-- card centralizado pelo flexbox do page-auth -->
-    <div class="auth-card">
-
-      <div class="auth-logo">
-        <span class="auth-logo-ball">⚽</span>
-        <div>
-          <div class="auth-logo-name">DIÁRIO COPA</div>
-          <div class="auth-logo-year">2026</div>
-        </div>
-      </div>
-
-      <!-- abas: chama switchTab() definida em js/auth.js -->
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login"    onclick="switchTab('login')">Entrar</button>
-        <button class="auth-tab"        id="tab-register" onclick="switchTab('register')">Criar conta</button>
-      </div>
-
-      <!-- FORMULÁRIO DE LOGIN
-           chama: handleLogin(event) em js/auth.js
-           endpoint: POST /api/usuarios/login
-           body: { email, senha }
-           retorno: { token, usuario: { idUsuario, nome } }
-      -->
-      <form class="auth-form active" id="form-login" onsubmit="handleLogin(event)" novalidate>
-        <div class="auth-field">
-          <label for="login-email">E-mail</label>
-          <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email" />
-        </div>
-        <div class="auth-field">
-          <label for="login-password">Senha</label>
-          <div class="input-wrap">
-            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" />
-            <button type="button" class="toggle-pw" onclick="togglePw('login-password', this)" aria-label="Mostrar senha">👁</button>
-          </div>
-        </div>
-        <div class="auth-error hide" id="login-error" role="alert"></div>
-        <button type="submit" class="btn-auth" id="btn-login">
-          <span class="btn-label">Entrar</span>
-          <span class="btn-loading hide" aria-live="polite">aguarde…</span>
-        </button>
-      </form>
-
-      <!-- FORMULÁRIO DE CADASTRO
-           chama: handleRegister(event) em js/auth.js
-           endpoint: POST /api/usuarios/criar
-           body: { nome, email, senha }
-           retorno 201: { mensagem, id }
-           erro 409: e-mail já cadastrado
-      -->
-      <form class="auth-form" id="form-register" onsubmit="handleRegister(event)" novalidate>
-        <div class="auth-field">
-          <label for="reg-nome">Nome</label>
-          <input type="text" id="reg-nome" placeholder="Seu nome" required autocomplete="name" />
-        </div>
-        <div class="auth-field">
-          <label for="reg-email">E-mail</label>
-          <input type="email" id="reg-email" placeholder="seu@email.com" required autocomplete="email" />
-        </div>
-        <div class="auth-field">
-          <label for="reg-senha">Senha</label>
-          <div class="input-wrap">
-            <input type="password" id="reg-senha" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password" />
-            <button type="button" class="toggle-pw" onclick="togglePw('reg-senha', this)" aria-label="Mostrar senha">👁</button>
-          </div>
-        </div>
-        <div class="auth-field">
-          <label for="reg-confirma">Confirmar senha</label>
-          <div class="input-wrap">
-            <input type="password" id="reg-confirma" placeholder="Repita a senha" required autocomplete="new-password" />
-            <button type="button" class="toggle-pw" onclick="togglePw('reg-confirma', this)" aria-label="Mostrar senha">👁</button>
-          </div>
-        </div>
-        <div class="auth-error hide" id="register-error" role="alert"></div>
-        <button type="submit" class="btn-auth" id="btn-register">
-          <span class="btn-label">Criar conta</span>
-          <span class="btn-loading hide" aria-live="polite">aguarde…</span>
-        </button>
-      </form>
-
-    </div><!-- /auth-card -->
-  </div><!-- /page-auth -->
-
-
-  <!-- ── TELA 2: APP PRINCIPAL ── -->
-
-  <div id="page-app" class="page">
-    <p style="padding:40px;font-family:sans-serif;color:#0A2240">
-      ✅ Login efetuado!<code>#page-app</code>.
-    </p>
+    <div class="nav-links">
+      <button class="nav-link" onclick="window.location.href='login.html'">Entrar</button>
+      <button class="nav-cta" onclick="window.location.href='cadastro.html'">Criar conta</button>
+    </div>
   </div>
+</nav>
 
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-circle"></div>
+  <div class="hero-circle-2"></div>
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">Copa 2026 ao vivo</span>
+        </div>
+        <h1 class="hero-title">
+          Seu diário
+          <em>pessoal</em>
+          da <span class="accent-red">Copa</span>
+        </h1>
+        <p class="hero-desc">
+          Registre emoções, avalie jogos, adicione fotos e construa um histórico único da sua Copa do Mundo. Uma experiência personalizada que vai durar para sempre.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-hero-primary" onclick="window.location.href='cadastro.html'">Começar agora — é grátis</button>
+          <button class="btn-hero-ghost" onclick="document.querySelector('#features').scrollIntoView({behavior:'smooth'})">Ver funcionalidades</button>
+        </div>
+        <div class="hero-stats-row">
+          <div class="hero-stat"><div class="num">104</div><div class="lbl">Jogos na Copa</div></div>
+          <div class="hero-stat"><div class="num">48</div><div class="lbl">Seleções</div></div>
+          <div class="hero-stat"><div class="num">3</div><div class="lbl">Países-sede</div></div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div style="position:relative;">
+          <div class="floating-tag tag1">
+            <span class="ftag-icon">⭐</span> Favorito adicionado!
+          </div>
+          <div class="floating-tag tag2">
+            <span class="ftag-icon">🥳</span> Sentimento registrado
+          </div>
+          <div class="hero-mockup">
+            <div class="mock-bar">
+              <span class="mock-dot" style="background:#ff5f57"></span>
+              <span class="mock-dot" style="background:#febc2e"></span>
+              <span class="mock-dot" style="background:#28c840"></span>
+              <span style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:8px;">Diário Digital · Copa 2026</span>
+            </div>
+            <div class="mock-card">
+              <div class="mc-match">🇧🇷 Brasil × 🇦🇷 Argentina <span class="mc-score">2–1</span></div>
+              <div class="mc-text">"Clássico das Américas inesquecível! Vini Jr foi o melhor em campo..."</div>
+              <div class="mc-footer">
+                <span class="mc-stars">★★★★★</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);margin-left:4px;">5.0</span>
+                <span class="mc-sent">🥳</span>
+              </div>
+            </div>
+            <div class="mock-card">
+              <div class="mc-match">🇩🇪 Alemanha × 🇫🇷 França <span class="mc-score">1–1</span></div>
+              <div class="mc-text">"Clássico europeu tenso, empate justo..."</div>
+              <div class="mc-footer">
+                <span class="mc-stars">★★★★</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);margin-left:4px;">4.0</span>
+                <span class="mc-sent">😮</span>
+              </div>
+            </div>
+            <div class="mock-card">
+              <div class="mc-match">🇪🇸 Espanha × 🇨🇷 Costa Rica <span class="mc-score">4–0</span></div>
+              <div class="mc-text">"Goleada! Yamal brilhou na estreia..."</div>
+              <div class="mc-footer">
+                <span class="mc-stars">★★★★</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);margin-left:4px;">4.5</span>
+                <span class="mc-sent">🔥</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <!--
-    SCRIPTS
-    1. api.js   → define apiFetch() e API_BASE_URL
-    2. auth.js  → usa apiFetch(), então precisa vir depois
-  -->
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header">
+      <span class="section-label">Funcionalidades</span>
+      <h2 class="features-title">Tudo que você precisa<br>para viver a Copa</h2>
+      <p class="features-sub">Uma plataforma completa para registrar, acompanhar e reviver cada momento do maior evento esportivo do mundo.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon red">📝</div>
+        <div class="feat-title">Registre experiências</div> 
+        <div class="feat-desc">Escreva comentários sobre cada jogo, adicione notas de 0 a 5 estrelas e marque como assistido. Tudo organizado no seu diário pessoal.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon gold">🥳</div>
+        <div class="feat-title">Expresse sentimentos</div>
+        <div class="feat-desc">Registre se ficou feliz, frustrado, entusiasmado ou surpreso com cada partida. Uma forma emocional de guardar suas memórias.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon blue">🗓️</div>
+        <div class="feat-title">Linha do tempo</div>
+        <div class="feat-desc">Visualize todo o seu histórico de interações com a Copa de forma cronológica, com filtros por seleção, data e status.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon red">⭐</div>
+        <div class="feat-title">Jogos favoritos</div>
+        <div class="feat-desc">Marque as partidas mais inesquecíveis como favoritas e acesse rapidamente os melhores momentos da Copa.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon gold">📋</div>
+        <div class="feat-title">Listas personalizadas</div>
+        <div class="feat-desc">Crie listas temáticas como "Melhores gols", "Jogos que me emocionaram" e organize a Copa do seu jeito.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon blue">🔒</div>
+        <div class="feat-title">Totalmente privado</div>
+        <div class="feat-desc">Seu diário é só seu. Registro seguro com autenticação, dados criptografados e acesso exclusivo à sua conta.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="how-header">
+      <span class="section-label" style="color:rgba(201,168,76,0.9)">Como funciona</span>
+      <h2 class="how-title">Simples como torcer</h2>
+      <p class="how-sub">Em poucos passos você começa a construir seu diário da Copa e guardar as memórias para sempre.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <span class="step-icon">👤</span>
+        <div class="step-title">Crie sua conta</div>
+        <div class="step-desc">Cadastre-se com nome, e-mail e senha. Rápido e gratuito, sem complicação.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <span class="step-icon">⚽</span>
+        <div class="step-title">Escolha o jogo</div>
+        <div class="step-desc">Selecione a partida que assistiu entre os jogos da Copa 2026.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <span class="step-icon">✍️</span>
+        <div class="step-title">Registre tudo</div>
+        <div class="step-desc">Escreva, avalie, adicione fotos e sentimentos. Cada detalhe conta.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <span class="step-icon">📖</span>
+        <div class="step-title">Reviva a Copa</div>
+        <div class="step-desc">Acesse seu histórico completo, sua linha do tempo e suas estatísticas pessoais.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONAS -->
+<section class="personas">
+  <div class="container">
+    <div class="personas-header">
+      <span class="section-label">Para quem é?</span>
+      <h2 class="personas-title">Feito para todo tipo de torcedor</h2>
+    </div>
+    <div class="personas-grid">
+      <div class="persona-card">
+        <div class="persona-avatar p1">AC</div>
+        <div class="persona-body">
+          <div class="persona-name">Ana Silva</div>
+          <div class="persona-meta">22 anos · Estudante universitária · Muito ativa em redes sociais</div>
+          <div class="persona-row">
+            <span class="persona-row-lbl">Objetivo</span>
+            <span class="persona-row-val">Registrar opiniões e emoções sobre as partidas, avaliar jogos e acompanhar estatísticas em um único lugar centralizado.</span>
+          </div>
+          <div class="persona-row">
+            <span class="persona-row-lbl">Dificuldade</span>
+            <span class="persona-row-val">Não encontra um ambiente único e organizado para centralizar todas as suas interações com a Copa.</span>
+          </div>
+        </div>
+      </div>
+      <div class="persona-card">
+        <div class="persona-avatar p2">JP</div>
+        <div class="persona-body">
+          <div class="persona-name">João Pereira</div>
+          <div class="persona-meta">30 anos · Assistente administrativo · Usuário intermediário de tecnologia</div>
+          <div class="persona-row">
+            <span class="persona-row-lbl">Objetivo</span>
+            <span class="persona-row-val">Acessar rapidamente resultados e estatísticas dos jogos, sem necessidade de interações complexas ou carregadas.</span>
+          </div>
+          <div class="persona-row">
+            <span class="persona-row-lbl">Dificuldade</span>
+            <span class="persona-row-val">Interfaces excessivamente carregadas de informação dificultam a navegação e a usabilidade diária.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <h2 class="cta-big">A Copa começa<br>agora no seu diário</h2>
+    <p class="cta-sub">Não perca nenhuma memória. Cadastre-se gratuitamente e comece a registrar sua Copa 2026 hoje mesmo.</p>
+    <button class="btn-cta-white" onclick="window.location.href='cadastro.html'">Criar minha conta grátis →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">⚽ DIÁRIO DIGITAL · COPA 2026</div>
+      <div class="footer-links">
+        <a class="footer-link">Sobre</a>
+        <a class="footer-link">Privacidade</a>
+        <a class="footer-link">Termos</a>
+        <a class="footer-link">Contato</a>
+      </div>
+      <div class="footer-copy">© 2026 IFCE Campus Aracati · Ciência da Computação</div>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
