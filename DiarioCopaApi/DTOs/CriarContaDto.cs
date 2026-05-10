@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace DiarioCopaApi.DTOs;
 public class CriarContaDto
@@ -9,8 +10,10 @@ public class CriarContaDto
 
     [Required]
     [MinLength(8, ErrorMessage = "Tamanho de senha inválido.")]
+    [JsonPropertyName("password")]
     public string Senha { get; set; } = string.Empty;
 
     [Required]
+    [JsonPropertyName("name")]
     public string Nome { get; set; } = string.Empty;
 }

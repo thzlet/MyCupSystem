@@ -110,7 +110,7 @@ function clearMessages() {
 /* ============================================================
    SUBMIT — LOGIN
    ============================================================ */
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
   clearMessages();
 
@@ -129,37 +129,29 @@ function handleLogin(event) {
 
   // -------------------------------------------------------
   // INTEGRAÇÃO COM BACK-END
-  // SUBSTITUI AQUI GALERA !!!!!!!!!!!!!!
-  // tipo:
-  //   const res = await fetch('/api/auth/login', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ email, password })
-  //   });
-  //   if (!res.ok) { const err = await res.json(); showError('login', err.message); return; }
-  //   const { token } = await res.json();
-  //   localStorage.setItem('auth_token', token);
-  //   window.location.href = 'app.html';
-  // -------------------------------------------------------
-  setTimeout(() => {
+
+    const res = await apiFetch('/api/usuarios/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password })
+  });
+
+  if (!res.ok) { 
     btn.classList.remove('loading');
     btn.textContent = 'Entrar no Diário';
-
-    // simula credenciais inválidas para demonstração
-    if (password === 'errado') {
-      showError('login', 'E-mail ou senha incorretos. Tente novamente.');
-      return;
-    }
-
-    // sucesso: redireciona para o app
-    window.location.href = 'app.html'; // ajustar para a rota real
-  }, 1200);
+    const mensagemErro = res.data?.mensagem || 'Erro ao efetuar login.';
+    showError('login', mensagemErro); 
+    return; 
+  }
+  
+  localStorage.setItem('token', res.data.token);
+  window.location.href = 'app.html';
+  // -------------------------------------------------------
 }
 
 /* ============================================================
    SUBMIT — CADASTRO
    ============================================================ */
-function handleRegister(event) {
+async function handleRegister(event) {
   event.preventDefault();
   clearMessages();
 
@@ -181,23 +173,21 @@ function handleRegister(event) {
 
   // -------------------------------------------------------
   // INTEGRAÇÃO COM BACK-END
-  // SUBSTITUI AQUI TAMBEM GALERA !!!!!!!!!!!!!!!
-  // tipo:
-  //   const res = await fetch('/api/auth/register', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ name, email, password })
-  //   });
-  //   if (!res.ok) { const err = await res.json(); showError('register', err.message); return; }
-  //   showSuccess('register', 'Conta criada! Redirecionando...');
-  //   setTimeout(() => window.location.href = 'app.html', 1500);
-  // -------------------------------------------------------
-  setTimeout(() => {
+  const res = await apiFetch('/api/usuarios/criar', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password })
+  });
+
+  if (!res.ok) { 
     btn.classList.remove('loading');
     btn.textContent = 'Criar minha conta';
-    showSuccess('register', 'Conta criada com sucesso! Redirecionando...');
-    setTimeout(() => window.location.href = 'app.html', 1500); // ajuste para a rota real
-  }, 1400);
+    const mensagemErro = res.data?.mensagem || 'Erro ao criar conta.';
+    showError('register', mensagemErro); 
+    return; 
+  }
+  
+  showSuccess('register', 'Conta criada! Redirecionando...');
+  setTimeout(() => window.location.href = 'login.html', 1500);
 }
 
 /* ============================================================
