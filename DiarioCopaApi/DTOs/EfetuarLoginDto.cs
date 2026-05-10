@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace DiarioCopaApi.DTOs;
 
@@ -9,5 +10,6 @@ public class EfetuarLoginDto
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "A senha é obrigatória.")]
+    [JsonPropertyName("password")]
     public string Senha { get; set; } = string.Empty;
 }
