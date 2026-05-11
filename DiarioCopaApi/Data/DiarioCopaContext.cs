@@ -21,5 +21,10 @@ public class DiarioCopaContext : DbContext
 
         modelBuilder.Entity<JogoFavorito>()
             .HasKey(jf => new { jf.IdUsuario, jf.IdJogo });
+
+        modelBuilder.Entity<ListaJogos>()
+        .HasMany(l => l.Jogos)
+        .WithMany()
+        .UsingEntity(j => j.ToTable("ListaJogosJogos"));
     }
 }
