@@ -103,22 +103,16 @@ Cada jogo tem uma história e essa história merece ser contada por quem a viveu
 
 ```bash
 # Frontend
-HTML
-CSS
-JAVASCRIPT
+HTML, CSS and JAVASCRIPT
 
 # Backend
-C#
+C#, Docker
 
 # Banco de Dados
 MySQL
 
 # Autenticação
 JSON WEB TOKEN
-
-# API externa (dados da Copa)
-[ a definir ]
-
 
 ```
 ---
@@ -130,16 +124,22 @@ MyCupSystem/
 │   ├── requisitos.pdf
 │   └── 📁 diagramas/                     
 │
-│
 ├── 📁 DiarioCopaFront/                             
-│   ├── index.html
-│   └── 📁 css/
-    │   └── auth.css 
-│   └── 📁 js/
-    │   └── auth.js
-    │   └── api.js        
+    ├── index.html
+    ├── login.html
+    ├── home.html
+    │
+    ├──  📁 css/
+    │   ├── auth.css
+    │   ├── home.css
+    │   └── landing.css
+    │
+    ├── 📁 js/
+    │   ├── api.js
+    │   ├── auth.js
+    │   └── home.js  
 │
-└── 📁 DiarioCopaApi/              
+├── 📁 DiarioCopaApi/              
     │
     ├── 📁 Controllers/
     │   └── UsuariosController.cs        
@@ -234,7 +234,7 @@ cp .env.example .env
 - [x] Protótipos / Wireframes
 - [x] Configuração do ambiente de desenvolvimento
 - [x] Implementação do módulo de autenticação (RF01–RF04)
-- [ ] Implementação das funcionalidades de experiência (RF05–RF11)
+- [x] Implementação das funcionalidades de experiência (RF05–RF11)
 - [ ] Implementação das funcionalidades de consulta (RF12–RF15)
 - [ ] Testes e validação
 - [ ] Deploy
