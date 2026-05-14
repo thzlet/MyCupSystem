@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diário Digital · Copa 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <!-- ===== NAV ===== -->
+    <nav class="app-nav">
+      <div class="app-logo">
+        ⚽ DIÁRIO
+        <span class="app-logo-sub">Copa 2026</span>
+      </div>
+      <div class="app-tabs">
+        <button class="app-tab active" onclick="showScreen('home')">Início</button>
+        <button class="app-tab" onclick="showScreen('registrar')">Registrar</button>
+        <button class="app-tab" onclick="showScreen('timeline')">Linha do Tempo</button>
+        <button class="app-tab" onclick="showScreen('listas')">Listas</button>
+      </div>
+      <div class="app-user-bar">
+        <div class="app-avatar" id="user-avatar">?</div>
+        <a class="back-btn" href="login.html">← Sair</a>
+      </div>
+    </nav>
+
+    <!-- ===== TELA: INÍCIO (FEED) ===== -->
+    <div class="app-screen active" id="screen-home">
+      <div class="home-hero-inner">
+        <div class="home-hero-bg"></div>
+        <div class="home-hero-circle"></div>
+        <div class="home-badge">
+          <span class="live-dot"></span>
+          <span class="badge-lbl">Copa 2026 em andamento</span>
+        </div>
+        <h1 class="home-title">Olá, <em id="user-name">Torcedor!</em><br>Bem-vindo ao seu Diário</h1>
+        <p class="home-sub">Continue registrando suas memórias da Copa do Mundo 2026</p>
+        <div class="home-stats">
+          <div><div class="hs-num" id="stat-jogos">0</div><div class="hs-lbl">Jogos vistos</div></div>
+          <div><div class="hs-num" id="stat-nota">—</div><div class="hs-lbl">Nota média</div></div>
+          <div><div class="hs-num" id="stat-fav">0</div><div class="hs-lbl">Favoritos</div></div>
+          <div><div class="hs-num" id="stat-entradas">0</div><div class="hs-lbl">Entradas</div></div>
+        </div>
+      </div>
+      <div class="app-content">
+        <div class="sec-hdr">
+          <div class="sec-title">Meu Feed Recente</div>
+          <button class="btn-outline-sm" onclick="showScreen('registrar')">+ Nova entrada</button>
+        </div>
+        <div class="feed-list" id="feed-list">
+          <!-- Preenchido por home.js via API -->
+          <p class="feed-vazio">Nenhuma experiência registrada ainda.<br>
+            <button class="btn-outline-sm" style="margin-top:12px" onclick="showScreen('registrar')">Registrar meu primeiro jogo →</button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TELA: REGISTRAR ===== -->
+    <div class="app-screen" id="screen-registrar">
+      <div class="reg-wrap">
+        <div class="sec-hdr" style="margin-bottom:20px">
+          <div class="sec-title">Registrar Experiência</div>
+        </div>
+
+        <!-- Banner do jogo selecionado (preenchido via API de jogos) -->
+        <div class="reg-match-banner">
+          <div class="rmb-info">
+            <div class="rmb-teams" id="reg-jogo-nome">Selecione um jogo abaixo</div>
+            <div class="rmb-meta" id="reg-jogo-meta">—</div>
+          </div>
+          <div class="rmb-score" id="reg-jogo-placar">— × —</div>
+        </div>
+
+        <!-- Seletor de jogo -->
+        <div class="fg full" style="margin-bottom:16px">
+          <label>Jogo</label>
+          <select id="sel-jogo" onchange="selecionarJogo(this)">
+            <option value="">Escolha o jogo...</option>
+            <option value="1">🇧🇷 Brasil × 🇦🇷 Argentina — 17 Jun</option>
+            <option value="2">🇵🇹 Portugal × 🇨🇭 Suíça — 15 Jun</option>
+            <option value="3">🇩🇪 Alemanha × 🇫🇷 França — 13 Jun</option>
+            <option value="4">🇪🇸 Espanha × 🇨🇷 Costa Rica — 11 Jun</option>
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="fg full">
+            <label>Comentário sobre o jogo</label>
+            <textarea id="reg-comentario" placeholder="O que você achou desse jogo? Conte sua experiência, impressões, momentos marcantes..."></textarea>
+          </div>
+          <div class="fg">
+            <label>Sua nota (1–5 estrelas)</label>
+            <div class="star-picker" id="spicker">
+              <button class="spick" onclick="setStars(1)">★</button>
+              <button class="spick" onclick="setStars(2)">★</button>
+              <button class="spick" onclick="setStars(3)">★</button>
+              <button class="spick" onclick="setStars(4)">★</button>
+              <button class="spick" onclick="setStars(5)">★</button>
+            </div>
+          </div>
+          <div class="fg">
+            <label>Localização</label>
+            <input type="text" id="reg-localizacao" placeholder="Bar, casa, praça, estádio..." />
+          </div>
+          <div class="fg full">
+            <label>Sentimento</label>
+            <div class="sent-row">
+              <button class="sent-opt" onclick="selSent(this)" data-sent="Feliz">🥳<span class="sl">Feliz</span></button>
+              <button class="sent-opt" onclick="selSent(this)" data-sent="Frustrado">😤<span class="sl">Frustrado</span></button>
+              <button class="sent-opt" onclick="selSent(this)" data-sent="Surpreso">😮<span class="sl">Surpreso</span></button>
+              <button class="sent-opt" onclick="selSent(this)" data-sent="Entusiasmo">🔥<span class="sl">Entusiasmo</span></button>
+              <button class="sent-opt" onclick="selSent(this)" data-sent="Entediado">😴<span class="sl">Entediado</span></button>
+            </div>
+          </div>
+          <div class="fg full">
+            <label>Opções</label>
+            <div class="check-row">
+              <label class="check-item">
+                <input type="checkbox" id="reg-assistido" checked />
+                <span>✅ Marcar como assistido</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" id="reg-favorito" />
+                <span>⭐ Adicionar aos favoritos</span>
+              </label>
+            </div>
+          </div>
+          <div class="fg full">
+            <div id="reg-erro" class="reg-erro" style="display:none"></div>
+            <button class="btn-primary-full" onclick="salvarExperiencia()">Publicar no meu diário →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TELA: LINHA DO TEMPO ===== -->
+    <div class="app-screen" id="screen-timeline">
+      <div class="tl-wrap">
+        <div class="sec-hdr" style="margin-bottom:16px">
+          <div class="sec-title">Linha do Tempo</div>
+        </div>
+        <div class="filter-chips">
+          <button class="fchip active" onclick="selChip(this, '')">Todos</button>
+          <button class="fchip" onclick="selChip(this, 'favorito')">⭐ Favoritos</button>
+          <button class="fchip" onclick="selChip(this, 'assistido')">✅ Assistidos</button>
+        </div>
+        <div class="timeline" id="timeline-list">
+          <p class="feed-vazio">Nenhuma entrada na linha do tempo ainda.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TELA: LISTAS ===== -->
+    <div class="app-screen" id="screen-listas">
+      <div class="lists-wrap">
+        <div class="sec-hdr" style="margin-bottom:20px">
+          <div class="sec-title">Minhas Listas</div>
+          <button class="btn-create-list">+ Criar nova lista</button>
+        </div>
+        <div class="lists-grid" id="lists-grid">
+          <div class="list-card">
+            <div class="lc-icon">⭐</div>
+            <div class="lc-name">Meus Favoritos</div>
+            <div class="lc-desc">Os jogos que mais me marcaram emocionalmente durante a Copa 2026.</div>
+            <div class="lc-count" id="lc-count-fav">0 jogos</div>
+          </div>
+          <div class="list-card" style="border:2px dashed rgba(10,34,64,0.12);background:rgba(10,34,64,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;cursor:pointer">
+            <div style="font-size:36px;margin-bottom:8px;opacity:0.3">+</div>
+            <div style="font-size:13px;color:var(--gray);font-weight:500">Criar nova lista</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-shell -->
+
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

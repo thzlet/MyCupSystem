@@ -144,7 +144,7 @@ async function handleLogin(event) {
   }
   
   localStorage.setItem('token', res.data.token);
-  window.location.href = 'app.html';
+  window.location.href = 'home.html';
   // -------------------------------------------------------
 }
 
