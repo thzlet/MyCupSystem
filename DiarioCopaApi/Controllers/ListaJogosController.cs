@@ -78,6 +78,7 @@ public class ListaJogosController : ControllerBase  // ← estava faltando isso
         return Ok(new { mensagem = "Jogo adicionado com sucesso!" });
     }
     [HttpGet("listar-listas")]
+    [Authorize]
     public IActionResult ListarListaJogos()
     {
         var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -96,6 +97,7 @@ public class ListaJogosController : ControllerBase  // ← estava faltando isso
         return Ok(minhasListas);
     }
     [HttpGet("{idLista}")]
+    [Authorize]
     public IActionResult BuscarLista(Guid idLista)
     {
         var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
