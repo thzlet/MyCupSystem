@@ -77,4 +77,45 @@ public class ListaJogosController : ControllerBase  // ← estava faltando isso
 
         return Ok(new { mensagem = "Jogo adicionado com sucesso!" });
     }
+    [HttpGet("listar-listas")]
+    [Authorize]
+    public IActionResult ListarListaJogos()
+    {
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var minhasListas = _context.ListasJogos
+            .Where(e => e.IdUsuario == idUsuarioLogado)
+            .Select(e => new ListaJogosRespostaDto
+            {
+                IdListaJogos = e.IdLista,
+                Titulo = e.TituloLista,
+                Descricao = e.Descricao,
+                Jogos = e.Jogos.ToList(),
+                QuantidadeJogos = e.Jogos.Count
+            })
+            .ToList();
+
+        return Ok(minhasListas);
+    }
+    [HttpGet("{idLista}")]
+    [Authorize]
+    public IActionResult BuscarLista(Guid idLista)
+    {
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        
+        var lista = _context.ListasJogos
+            .Where(e => e.IdLista == idLista && e.IdUsuario == idUsuarioLogado)
+            .Select(e => new ListaJogosRespostaDto
+            {
+                IdListaJogos = e.IdLista,
+                Titulo = e.TituloLista,
+                Descricao = e.Descricao,
+                Jogos = e.Jogos.ToList(),
+                QuantidadeJogos = e.Jogos.Count
+            })
+            .FirstOrDefault();
+
+        if (lista == null) return NotFound();
+        
+        return Ok(lista);
+    }
 }
