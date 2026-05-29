@@ -87,5 +87,29 @@ public class UsuariosController : ControllerBase
 
         return Ok(new { mensagem = "Senha alterada com sucesso." });
 
-    } 
+    }
+    [HttpGet("perfil")]
+    [Authorize]
+    public IActionResult VerPerfil()
+    {
+        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if(idClaim == null)
+            return Unauthorized(new { mensagem = "Sessão inválida ou expirada." });
+        
+        var idUsuarioLogado = Guid.Parse(idClaim.Value);
+
+        var usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == idUsuarioLogado);
+
+        if (usuario == null)
+            return NotFound( new { mensagem = "Usuário não encontrado." });
+
+        var perfilDto = new PerfilUsuarioDto
+        {
+            Id = usuario.IdUsuario,
+            Nome = usuario.Nome,
+            Email = usuario.Email
+        };
+
+        return Ok(perfilDto);
+    }
 }
