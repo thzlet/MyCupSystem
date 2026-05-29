@@ -22,4 +22,6 @@ public class CriarExperienciaDto
 
     // depois ver como funciona esse negocio da imagem
     public string? URL_Imagem { get; set; }
+    public bool Assistido { get; set; }
+    public bool Favorito { get; set; }
 }

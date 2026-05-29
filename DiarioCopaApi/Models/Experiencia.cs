@@ -28,6 +28,8 @@ public class Experiencia
     public string? Localizacao { get; set; } = string.Empty;
 
     public DateTime DataCriacao { get; set;} = DateTime.UtcNow;
+    public bool Assistido { get; set; }
+    public bool Favorito { get; set; }
 
     [ForeignKey("IdUsuario")]
     public Usuario Usuario { get; set; } = null!;

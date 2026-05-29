@@ -48,10 +48,13 @@ public class ExperienciasController : ControllerBase
             Sentimento = dto.Sentimento,
             Comentario = dto.Comentario,
             Localizacao = dto.Localizacao,
+            Assistido = dto.Assistido,
+            Favorito = dto.Favorito,
             URL_Imagem = dto.URL_Imagem // vazio por enquanto
         };
 
         _context.Experiencias.Add(novaExperiencia);
+        
         _context.SaveChanges();
 
         return Ok(new { mensagem = "Experiência registrada no seu diário com sucesso!", id = novaExperiencia.IdExperiencia });
