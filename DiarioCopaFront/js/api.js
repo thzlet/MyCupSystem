@@ -3,7 +3,7 @@
    ============================================================
 */
 
-const API_BASE_URL = 'http://localhost:5000'; // ← trocar pela nossa porta
+const API_BASE_URL = 'http://localhost:5225'; // ← trocar pela nossa porta
 
 /**
  * faz uma requisição autenticada (ou não) para a API.
