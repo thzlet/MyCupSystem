@@ -58,33 +58,12 @@ document.addEventListener('DOMContentLoaded', async () => {
    PERFIL DO USUÁRIO
    ============================================================ */
 async function carregarPerfil() {
-  try {
-    const res = await apiFetch('/api/usuarios/perfil');
-
-    if (res.status === 401) {
-      // token expirado
-      localStorage.removeItem('token');
-      window.location.href = 'login.html';
-      return;
-    }
-
-    if (res.ok && res.data) {
-      const nome = res.data.nome || res.data.name || 'Torcedor';
-      // iniciais para o avatar
-      const iniciais = nome
-        .split(' ')
-        .slice(0, 2)
-        .map(p => p[0].toUpperCase())
-        .join('');
-
-      const elNome   = document.getElementById('user-name');
-      const elAvatar = document.getElementById('user-avatar');
-      if (elNome)   elNome.textContent   = nome;
-      if (elAvatar) elAvatar.textContent = iniciais;
-    }
-  } catch (err) {
-    console.warn('Não foi possível carregar perfil:', err);
-  }
+  const nome = localStorage.getItem('nomeUsuario') || 'Torcedor';
+  const iniciais = nome.split(' ').slice(0, 2).map(p => p[0].toUpperCase()).join('');
+  const elNome = document.getElementById('user-name');
+  const elAvatar = document.getElementById('user-avatar');
+  if (elNome) elNome.textContent = nome;
+  if (elAvatar) elAvatar.textContent = iniciais;
 }
 
 /* ============================================================
@@ -92,7 +71,7 @@ async function carregarPerfil() {
    ============================================================ */
 async function carregarExperiencias() {
   try {
-    const res = await apiFetch('/api/experiencias');
+    const res = await apiFetch('/api/experiencias/listar-experiencias');
 
     if (res.status === 401) {
       localStorage.removeItem('token');
@@ -345,7 +324,7 @@ async function salvarExperiencia() {
   if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Publicando...'; }
 
   try {
-    const res = await apiFetch('/api/experiencias', {
+    const res = await apiFetch('/api/experiencias/criar-experiencia', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
