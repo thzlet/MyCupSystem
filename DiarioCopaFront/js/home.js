@@ -1,22 +1,22 @@
 /* ============================================================
    js/home.js — Diário Digital Copa 2026
-   Lógica principal do feed/home autenticado.
+   Lógica principal do feed/home autenticado
 
    Depende de:
      js/api.js   → apiFetch(endpoint, options)
-     js/auth.js  → (apenas no login.html; aqui só lemos o token)
+     js/auth.js  → (apenas no login.html; aqui só le o token)
 
    Endpoints esperados no back-end (DiarioCopaApi):
      GET  /api/usuarios/perfil  → { nome, email }
-     GET  /api/experiencias     → [ ExperienciaDTO ]
-     POST /api/experiencias     → cria nova experiência
+     GET  /api/experiencias/listar-experiencias → [ ExperienciaRespostaDto ]
+     POST /api/experiencias/criar-experiencia   → cria nova experiência
      GET  /api/jogos            → [ JogoDTO ] (opcional, fallback hardcoded)
 
-   ExperienciaDTO (esperado):
+   ExperienciaRespostaDto (backend real):
      {
-       id, jogoId, jogoNome, jogoPlacar, jogoData,
-       comentario, nota, localizacao, sentimento,
-       assistido, favorito, criadoEm
+       idExperiencia, jogoTitulo, dataJogo, fase,
+       golsTime1, golsTime2, nota, sentimento,
+       comentario, localizacao, dataRegistro
      }
    ============================================================ */
 
@@ -133,7 +133,7 @@ function renderFeed() {
 
   // exibe as 5 mais recentes no feed
   const recentes = [..._experiencias]
-    .sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm))
+    .sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro))
     .slice(0, 5);
 
   lista.innerHTML = recentes.map(exp => cardFeedHTML(exp)).join('');
@@ -142,19 +142,17 @@ function renderFeed() {
 function cardFeedHTML(exp) {
   const stars = starsHTML(exp.nota || 0);
   const sentEmoji = sentiEmo(exp.sentimento);
-  const data = formatarData(exp.criadoEm);
+  const data = formatarData(exp.dataRegistro);
   const loc = exp.localizacao
     ? `<span class="fc-loc"><span class="loc-dot"></span>${esc(exp.localizacao)}</span>`
     : '';
-  const fav = exp.favorito ? '<span style="color:var(--gold);font-size:13px">⭐</span>' : '';
 
   return `
     <div class="feed-card">
       <div class="fc-top">
         <div class="fc-match">
-          ${esc(exp.jogoNome || '—')}
-          <span class="score-pill">${esc(exp.jogoPlacar || '— × —')}</span>
-          ${fav}
+          ${esc(exp.jogoTitulo || '—')}
+          <span class="score-pill">${exp.golsTime1 ?? '?'} × ${exp.golsTime2 ?? '?'}</span>
         </div>
         <div class="fc-emoji">${sentEmoji}</div>
       </div>
@@ -176,10 +174,7 @@ function renderTimeline(filtro) {
   const lista = document.getElementById('timeline-list');
   if (!lista) return;
 
-  let dados = [..._experiencias].sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
-
-  if (filtro === 'favorito')  dados = dados.filter(e => e.favorito);
-  if (filtro === 'assistido') dados = dados.filter(e => e.assistido);
+  let dados = [..._experiencias].sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro));
 
   if (dados.length === 0) {
     lista.innerHTML = '<p class="feed-vazio">Nenhuma entrada encontrada para esse filtro.</p>';
@@ -187,20 +182,17 @@ function renderTimeline(filtro) {
   }
 
   lista.innerHTML = dados.map(exp => {
-    const isGold = exp.favorito;
-    const tags   = [];
-    if (exp.assistido) tags.push('<span class="tl-tag">✅ Assistido</span>');
-    if (exp.favorito)  tags.push('<span class="tl-tag gold">⭐ Favorito</span>');
+    const tags = [];
     if (exp.sentimento) tags.push(`<span class="tl-tag red">${sentiEmo(exp.sentimento)} ${esc(exp.sentimento)}</span>`);
     if (exp.nota) tags.push(`<span class="tl-tag">${starsHTML(exp.nota, true)}</span>`);
 
     return `
       <div class="tl-item">
-        <div class="tl-dot${isGold ? ' gold' : ''}"></div>
+        <div class="tl-dot"></div>
         <div class="tl-card">
           <div class="tlc-head">
-            <span>${esc(exp.jogoNome || '—')} · ${esc(exp.jogoPlacar || '—')}</span>
-            <span class="tlc-date">${formatarData(exp.criadoEm)}</span>
+            <span>${esc(exp.jogoTitulo || '—')} · ${exp.golsTime1 ?? '?'} × ${exp.golsTime2 ?? '?'}</span>
+            <span class="tlc-date">${formatarData(exp.dataRegistro)}</span>
           </div>
           <div class="tlc-body">${esc(exp.comentario || '')}</div>
           <div class="tlc-tags">${tags.join('')}</div>
@@ -220,7 +212,7 @@ function selChip(el, filtro) {
    RENDER — LISTAS
    ============================================================ */
 function renderListas() {
-  const countFav = _experiencias.filter(e => e.favorito).length;
+  const countFav = 0; // TODO: implementar quando backend adicionar campo favorito
   const el = document.getElementById('lc-count-fav');
   if (el) el.textContent = `${countFav} jogo${countFav !== 1 ? 's' : ''}`;
 }
@@ -276,8 +268,6 @@ async function salvarExperiencia() {
   const jogoId     = document.getElementById('sel-jogo')?.value;
   const comentario = document.getElementById('reg-comentario')?.value.trim();
   const localizacao= document.getElementById('reg-localizacao')?.value.trim();
-  const assistido  = document.getElementById('reg-assistido')?.checked ?? true;
-  const favorito   = document.getElementById('reg-favorito')?.checked ?? false;
 
   // --- validações ---
   function mostrarErro(msg) {
@@ -304,20 +294,12 @@ async function salvarExperiencia() {
     return;
   }
 
-  // dados do jogo (do mapa local; futuramente da API de jogos)
-  const jogo = JOGOS_MAP[jogoId] || {};
-
   const payload = {
-    jogoId,
-    jogoNome:   jogo.nome   || '',
-    jogoPlacar: jogo.placar || '',
-    jogoData:   jogo.data   || '',
-    comentario,
-    nota:       _starSelected,
-    localizacao,
+    idJogo: jogoId,
+    nota: converterNota(_starSelected),
     sentimento: _sentSelected,
-    assistido,
-    favorito,
+    comentario,
+    localizacao,
   };
 
   // estado de carregamento
@@ -431,11 +413,16 @@ function starsHTML(nota, compact = false) {
 /** Emoji por sentimento */
 function sentiEmo(sent) {
   const map = {
-    'Feliz':      '🥳',
-    'Frustrado':  '😤',
-    'Surpreso':   '😮',
-    'Entusiasmo': '🔥',
-    'Entediado':  '😴',
+    'FELIZ':      '🥳',
+    'TRISTE':     '😢',
+    'CONFIANTE':  '😎',
+    'ALIVIADO':   '😮‍💨',
+    'IRRITADO':   '😤',
+    'NOSTALGICO': '🥹',
+    'EMPOLGADO':  '🔥',
+    'ORGULHOSO':  '💪',
+    'ANSIOSO':    '😬',
+    'ENJOADO':    '🤢',
   };
   return map[sent] || '';
 }
@@ -450,4 +437,10 @@ function formatarData(iso) {
   } catch {
     return '—';
   }
+}
+
+/** Converte estrelas (1–5) para o valor do enum Nota no backend */
+function converterNota(estrelas) {
+  const mapa = { 1: 10, 2: 20, 3: 30, 4: 40, 5: 50 };
+  return mapa[estrelas] ?? 0;
 }
