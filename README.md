@@ -181,24 +181,50 @@ MyCupSystem/
 ```
 ---
 
-
 ## Como Rodar
-> ⚠️ *As instruções completas de instalação e execução serão adicionadas ao longo do desenvolvimento.*
 
+### Pré-requisitos
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- MySQL 8+ rodando localmente
+- Extensão [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) no VS Code
+
+### 1. Clone o repositório
+```bash
+git clone https://github.com/thzlet/MyCupSystem.git
+cd MyCupSystem
 ```
-# 1. Clone o repositório
-git clone https://github.com/seu-usuario/diario-digital-copa-2026.git
 
-# 2. Acesse a pasta do projeto
-cd diario-digital-copa-2026
-
-# 3. Configure as variáveis de ambiente
-cp .env.example .env
-
-# 4. Siga as instruções específicas de cada módulo (frontend/backend)
+### 2. Configure o banco de dados (backend)
+Crie o banco no MySQL:
+```sql
+CREATE DATABASE db_diariocopa;
 ```
+
+Na pasta `DiarioCopaApi/`, crie o arquivo `appsettings.Development.json` com suas credenciais locais (esse arquivo não vai pro git):
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Port=3306;Database=db_diariocopa;Uid=SEU_USUARIO;Pwd=SUA_SENHA;"
+  },
+  "Jwt": {
+    "Key": "uma-chave-secreta-com-pelo-menos-32-caracteres"
+  }
+}
+```
+
+### 3. Suba o backend
+```bash
+cd DiarioCopaApi
+dotnet run
+```
+A API ficará disponível em `http://localhost:5225`.  
+O Swagger estará em `http://localhost:5225/swagger`.
+
+### 4. Suba o frontend
+Abra a pasta `DiarioCopaFront/` no VS Code e clique em **Go Live** (Live Server).  
+O front ficará disponível em `http://127.0.0.1:5500`.
+
 ---
-
 ## Documentação
 
 | Documento | Descrição | Status |
@@ -206,8 +232,6 @@ cp .env.example .env
 | Documento de Requisitos | Requisitos funcionais (RF01–RF15) e não funcionais (RNF01–RNF08) | ✅ Concluído |
 | Diagramas UML | Casos de uso, classes, sequência, estados e atividades | ✅ Concluído |
 | Protótipos | Wireframes e mockups das telas | ✅ Concluído |
-
----
 
 ---
 
