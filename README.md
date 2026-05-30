@@ -62,8 +62,8 @@ Cada jogo tem uma história e essa história merece ser contada por quem a viveu
 | ID | Funcionalidade | Descrição |
 |----|---------------|-----------|
 | RF12 | **Consultar Linha do Tempo** | Feed cronológico privado com filtros por data, seleção e jogo |
-| RF14 | **Criar Lista de Jogos** | Organização personalizada de partidas em listas nomeadas |
-| RF15 | **Adicionar Favorito** | Marcação de jogos favoritos com acesso rápido em aba dedicada |
+| RF13 | **Criar Lista de Jogos** | Organização personalizada de partidas em listas nomeadas |
+| RF14 | **Adicionar Favorito** | Marcação de jogos favoritos com acesso rápido em aba dedicada |
 
 ---
 
@@ -259,7 +259,7 @@ O front ficará disponível em `http://127.0.0.1:5500`.
 - [x] Configuração do ambiente de desenvolvimento
 - [x] Implementação do módulo de autenticação (RF01–RF04)
 - [x] Implementação das funcionalidades de experiência (RF05–RF11)
-- [ ] Implementação das funcionalidades de consulta (RF12–RF15)
+- [ ] Implementação das funcionalidades de consulta (RF12–RF14)
 - [ ] Testes e validação
 - [ ] Deploy
 
