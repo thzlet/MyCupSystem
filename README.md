@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/Copa%20do%20Mundo-2026-006847?style=for-the-badge&logo=fifa&logoColor=white" />
 <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-red?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Versão-1.0.0-blue?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Versão-1.1.0-blue?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Licença-MIT-green?style=for-the-badge" />
 
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&color=FFFFFF&center=true&vCenter=true&width=435&lines=Sua+Experiência!⚽;Sua+Copa!🏆;Seu+Diário!📸;)](https://git.io/typing-svg)
@@ -17,212 +17,11 @@
 
 ## Sobre o Projeto
 
-O **Diário Digital da Copa 2026** é uma aplicação web desenvolvida como projeto acadêmico no **Instituto Federal**, no contexto da disciplina de **Análise de Projeto de Sistemas**. A plataforma combina acompanhamento informativo com interação pessoal, permitindo que torcedores construam um registro único e personalizado de suas vivências durante a Copa do Mundo de 2026.
+O **My Cup** é uma aplicação web desenvolvida como projeto acadêmico no **Instituto Federal**, no contexto da disciplina de **Análise de Projeto de Sistemas**. A plataforma combina acompanhamento informativo com interação pessoal, permitindo que torcedores construam um registro único e personalizado de suas vivências durante a Copa do Mundo de 2026.
 
 > *"Não é só futebol. É memória."*
 
 Cada jogo tem uma história e essa história merece ser contada por quem a viveu. O sistema funciona como um **diário digital interativo**, onde o usuário pode registrar opiniões, sentimentos, avaliações, imagens e localizações de onde assistiu a cada partida, tudo organizado em uma linha do tempo pessoal.
-
----
-
-## Público-Alvo
-
-| Perfil | Descrição |
-|--------|-----------|
-| **Torcedor Engajado** | Quer registrar emoções, avaliar jogos, comentar e acompanhar estatísticas da Copa com profundidade |
-| **Usuário Casual** | Busca acessar rapidamente resultados e informações sem interações complexas |
-
----
-
-## Funcionalidades
-
-### Autenticação e Conta
-
-| ID | Funcionalidade | Descrição |
-|----|---------------|-----------|
-| RF01 | **Criar Conta** | Cadastro com nome, e-mail e senha, com validação de formato e segurança |
-| RF02 | **Alterar Senha** | Atualização segura da senha com validação da senha atual |
-| RF03 | **Efetuar Login** | Autenticação por e-mail e senha com início de sessão |
-| RF04 | **Efetuar Logout** | Encerramento seguro da sessão com invalidação de token |
-
-### Experiências e Interações
-
-| ID | Funcionalidade | Descrição |
-|----|---------------|-----------|
-| RF05 | **Registrar Experiência** | Publicação de texto no feed privado do usuário sobre um jogo |
-| RF06 | **Adicionar Nota** | Avaliação numérica do jogo (escala de 0 a 5, com incremento de 0.5) |
-| RF07 | **Marcar como Assistido** | Sinalização de partidas já vistas, com histórico de visualização |
-| RF08 | **Adicionar Sentimento** | Registro emocional da partida (felicidade, frustração, entusiasmo etc.) |
-| RF09 | **Adicionar Imagem** | Upload de imagens vinculadas à experiência registrada |
-| RF10 | **Adicionar Comentário** | Texto livre associado a um jogo específico |
-| RF11 | **Adicionar Localização** | Registro do local onde o jogo foi assistido (nome, endereço ou GPS) |
-
-### Consultas e Organização
-
-| ID | Funcionalidade | Descrição |
-|----|---------------|-----------|
-| RF12 | **Consultar Linha do Tempo** | Feed cronológico privado com filtros por data, seleção e jogo |
-| RF13 | **Criar Lista de Jogos** | Organização personalizada de partidas em listas nomeadas |
-| RF14 | **Adicionar Favorito** | Marcação de jogos favoritos com acesso rápido em aba dedicada |
-
----
-
-## Requisitos Não Funcionais
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    ATRIBUTOS DE QUALIDADE                   │
-├──────────────────┬──────────────────────────────────────────┤
-│    Usabilidade   │ Interface intuitiva, sem necessidade de  │
-│                  │ treinamento prévio                       │
-├──────────────────┼──────────────────────────────────────────┤
-│    Desempenho    │ Operações principais em até 3 segundos   │
-├──────────────────┼──────────────────────────────────────────┤
-│    Segurança     │ Senhas criptografadas, acesso autenticado│
-├──────────────────┼──────────────────────────────────────────┤
-│   Disponibilidade│ Uptime contínuo, especialmente durante   │
-│                  │ o período da Copa                        │
-├──────────────────┼──────────────────────────────────────────┤
-│   Compatibilidade│ Chrome, Edge e navegadores modernos      │
-├──────────────────┼──────────────────────────────────────────┤
-│   Integridade    │ Dados corretos, sem duplicidade ou       │
-│                  │ inconsistências                          │
-├──────────────────┼──────────────────────────────────────────┤
-│  Confiabilidade  │ Baixa taxa de falhas, erros comunicados  │
-│                  │ claramente ao usuário                    │
-├──────────────────┼──────────────────────────────────────────┤
-│  Manutenibilidade│ Código estruturado seguindo boas práticas│
-└──────────────────┴──────────────────────────────────────────┘
-```
-
----
-
-## Tecnologias
-
-> ⚠️ *Esta seção será atualizada posteriormente*
-
-```bash
-# Frontend
-HTML, CSS and JAVASCRIPT
-
-# Backend
-C#, Docker
-
-# Banco de Dados
-MySQL
-
-# Autenticação
-JSON WEB TOKEN
-
-```
----
-## Estrutura do Projeto
-```
-MyCupSystem/
-│
-├── 📁 docs/                            
-│   ├── DiarioDigitalCopa2026-REQUISITOS.docx.pdf
-│   └── 📁 diagramas/                     
-│
-├── 📁 DiarioCopaFront/                             
-    ├── index.html
-    ├── login.html
-    ├── home.html
-    │
-    ├──  📁 css/
-    │   ├── auth.css
-    │   ├── home.css
-    │   └── landing.css
-    │
-    ├── 📁 js/
-    │   ├── api.js
-    │   ├── auth.js
-    │   └── home.js  
-│
-├── 📁 DiarioCopaApi/              
-    │
-    ├── 📁 Controllers/
-    │   └── UsuariosController.cs        
-    │
-    ├── 📁 DTOs/
-    │   ├── AlterarSenhaDto.cs
-    │   ├── CriarContaDto.cs
-    │   └── EfetuarLoginDto.cs
-    │
-    ├── 📁 Data/
-    │   └── DiarioCopaContext.cs       
-    │
-    ├── 📁 Migrations/                    
-    │   ├── 20260501001740_InitialCreate.cs
-    │   ├── 20260501001740_InitialCreate.Designer.cs
-    │   └── DiarioCopaContextModelSnapshot.cs
-    │
-    ├── 📁 Models/
-    │   ├── 📁 Enums/
-    │   │   ├── Nota.cs
-    │   │   └── Sentimento.cs
-    │   ├── Experiencia.cs
-    │   ├── Jogo.cs
-    │   ├── JogoFavorito.cs
-    │   ├── ListaJogos.cs
-    │   └── Usuario.cs
-    │
-    ├── 📁 Properties/
-    │   └── launchSettings.json          
-    │
-    ├── 📁 Services/
-    │   └── TokenService.cs              
-    │
-    ├── Dockerfile                     
-    ├── Program.cs                        
-    ├── appsettings.json               
-    ├── DiarioCopaApi.csproj             
-    └── DiarioCopaApi.http               
-```
----
-
-## Como Rodar
-
-### Pré-requisitos
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- MySQL 8+ rodando localmente
-- Extensão [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) no VS Code
-
-### 1. Clone o repositório
-```bash
-git clone https://github.com/thzlet/MyCupSystem.git
-cd MyCupSystem
-```
-
-### 2. Configure o banco de dados (backend)
-Crie o banco no MySQL:
-```sql
-CREATE DATABASE db_diariocopa;
-```
-
-Na pasta `DiarioCopaApi/`, crie o arquivo `appsettings.Development.json` com suas credenciais locais (esse arquivo não vai pro git):
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=db_diariocopa;Uid=SEU_USUARIO;Pwd=SUA_SENHA;"
-  },
-  "Jwt": {
-    "Key": "uma-chave-secreta-com-pelo-menos-32-caracteres"
-  }
-}
-```
-
-### 3. Suba o backend
-```bash
-cd DiarioCopaApi
-dotnet run
-```
-A API ficará disponível em `http://localhost:5225`.  
-O Swagger estará em `http://localhost:5225/swagger`.
-
-### 4. Suba o frontend
-Abra a pasta `DiarioCopaFront/` no VS Code e clique em **Go Live** (Live Server).  
-O front ficará disponível em `http://127.0.0.1:5500`.
 
 ---
 ## Documentação
@@ -232,6 +31,8 @@ O front ficará disponível em `http://127.0.0.1:5500`.
 | Documento de Requisitos | Requisitos funcionais (RF01–RF15) e não funcionais (RNF01–RNF08) | ✅ Concluído |
 | Diagramas UML | Casos de uso, classes, sequência, estados e atividades | ✅ Concluído |
 | Protótipos | Wireframes e mockups das telas | ✅ Concluído |
+
+Para mais informações, acesse a documentação em docs/DocumentacaoMyCupSystem.pdf
 
 ---
 
@@ -259,7 +60,7 @@ O front ficará disponível em `http://127.0.0.1:5500`.
 - [x] Configuração do ambiente de desenvolvimento
 - [x] Implementação do módulo de autenticação (RF01–RF04)
 - [x] Implementação das funcionalidades de experiência (RF05–RF11)
-- [ ] Implementação das funcionalidades de consulta (RF12–RF14)
+- [x] Implementação das funcionalidades de consulta (RF12–RF14)
 - [ ] Testes e validação
 - [ ] Deploy
 
