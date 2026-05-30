@@ -1,56 +1,47 @@
 /* ============================================================
    js/home.js — Diário Digital Copa 2026
-   Lógica principal do feed/home autenticado
+   Lógica principal do feed/home autenticado.
 
    Depende de:
      js/api.js   → apiFetch(endpoint, options)
-     js/auth.js  → (apenas no login.html; aqui só le o token)
+     js/auth.js  → (apenas no login.html; aqui só lemos o token)
 
    Endpoints esperados no back-end (DiarioCopaApi):
-     GET  /api/usuarios/perfil  → { nome, email }
+     GET  /api/usuarios/perfil                  → PerfilUsuarioDto
      GET  /api/experiencias/listar-experiencias → [ ExperienciaRespostaDto ]
-     POST /api/experiencias/criar-experiencia   → cria nova experiência
-     GET  /api/jogos            → [ JogoDTO ] (opcional, fallback hardcoded)
+     POST /api/experiencias/criar-experiencia   → ExperienciaRespostaDto
+     GET  /api/jogos                            → [ JogoRespostaDto ]
 
    ExperienciaRespostaDto (backend real):
-     {
-       idExperiencia, jogoTitulo, dataJogo, fase,
+     { idExperiencia, jogoTitulo, dataJogo, fase,
        golsTime1, golsTime2, nota, sentimento,
-       comentario, localizacao, dataRegistro
-     }
+       comentario, localizacao, dataRegistro }
+
+   JogoRespostaDto (backend real):
+     { id, time1, time2, dataHora, estadio, fase, golsTime1, golsTime2 }
    ============================================================ */
 
 /* ============================================================
    ESTADO GLOBAL
    ============================================================ */
-let _starSelected  = 0;       // nota selecionada (1–5)
-let _sentSelected  = '';      // sentimento selecionado
-let _tlFiltro      = '';      // filtro ativo na timeline
-let _experiencias  = [];      // cache local das experiências
-
-/* Mapa de jogos (fallback caso a API de jogos não esteja pronta) */
-const JOGOS_MAP = {
-  '1': { nome: '🇧🇷 Brasil × 🇦🇷 Argentina',  placar: '2 × 1', data: '17 Jun 2026', local: 'MetLife Stadium' },
-  '2': { nome: '🇵🇹 Portugal × 🇨🇭 Suíça',    placar: '1 × 0', data: '15 Jun 2026', local: 'SoFi Stadium'    },
-  '3': { nome: '🇩🇪 Alemanha × 🇫🇷 França',    placar: '1 × 1', data: '13 Jun 2026', local: 'AT&T Stadium'    },
-  '4': { nome: '🇪🇸 Espanha × 🇨🇷 Costa Rica', placar: '4 × 0', data: '11 Jun 2026', local: 'Rose Bowl'       },
-};
+let _starSelected = 0;    // nota selecionada (1–5)
+let _sentSelected = '';   // sentimento selecionado
+let _tlFiltro     = '';   // filtro ativo na timeline
+let _experiencias = [];   // cache local das experiências
+let _jogos        = [];   // cache dos jogos carregados da API
 
 /* ============================================================
    INICIALIZAÇÃO
    ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Guarda de autenticação e redireciona se não houver token
   const token = localStorage.getItem('token');
   if (!token) {
     window.location.href = 'login.html';
     return;
   }
 
-  // 2. Carrega perfil do usuário
   await carregarPerfil();
-
-  // 3. Carrega experiências e atualiza toda a UI
+  await carregarJogos();
   await carregarExperiencias();
 });
 
@@ -60,10 +51,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function carregarPerfil() {
   const nome = localStorage.getItem('nomeUsuario') || 'Torcedor';
   const iniciais = nome.split(' ').slice(0, 2).map(p => p[0].toUpperCase()).join('');
-  const elNome = document.getElementById('user-name');
+  const elNome   = document.getElementById('user-name');
   const elAvatar = document.getElementById('user-avatar');
-  if (elNome) elNome.textContent = nome;
+  if (elNome)   elNome.textContent   = nome;
   if (elAvatar) elAvatar.textContent = iniciais;
+}
+
+/* ============================================================
+   CARREGAR JOGOS (popula o <select> de registro)
+   ============================================================ */
+async function carregarJogos() {
+  try {
+    const res = await apiFetch('/api/jogos');
+    if (!res.ok || !Array.isArray(res.data)) return;
+
+    _jogos = res.data;
+
+    const sel = document.getElementById('sel-jogo');
+    if (!sel) return;
+
+    sel.innerHTML = '<option value="">Selecione um jogo...</option>';
+    _jogos.forEach(jogo => {
+      const option = document.createElement('option');
+      option.value = jogo.id;
+      option.textContent = `${jogo.time1} x ${jogo.time2} — ${jogo.fase}`;
+      sel.appendChild(option);
+    });
+  } catch (err) {
+    console.warn('Erro ao carregar jogos:', err);
+  }
 }
 
 /* ============================================================
@@ -94,23 +110,16 @@ async function carregarExperiencias() {
    NAVEGAÇÃO ENTRE TELAS
    ============================================================ */
 function showScreen(id) {
-  // desativa todas as telas e abas
   document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
 
-  // ativa a tela pedida
   const tela = document.getElementById(`screen-${id}`);
   if (tela) tela.classList.add('active');
 
-  // ativa a aba correspondente
-  const tabs = document.querySelectorAll('.app-tab');
-  tabs.forEach(t => {
-    if (t.getAttribute('onclick')?.includes(`'${id}'`)) {
-      t.classList.add('active');
-    }
+  document.querySelectorAll('.app-tab').forEach(t => {
+    if (t.getAttribute('onclick')?.includes(`'${id}'`)) t.classList.add('active');
   });
 
-  // ao entrar na tela de registrar, reseta o formulário
   if (id === 'registrar') resetarFormulario();
 }
 
@@ -131,7 +140,6 @@ function renderFeed() {
     return;
   }
 
-  // exibe as 5 mais recentes no feed
   const recentes = [..._experiencias]
     .sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro))
     .slice(0, 5);
@@ -140,10 +148,10 @@ function renderFeed() {
 }
 
 function cardFeedHTML(exp) {
-  const stars = starsHTML(exp.nota || 0);
+  const stars    = starsHTML(notaParaEstrelas(exp.nota));
   const sentEmoji = sentiEmo(exp.sentimento);
-  const data = formatarData(exp.dataRegistro);
-  const loc = exp.localizacao
+  const data     = formatarData(exp.dataRegistro);
+  const loc      = exp.localizacao
     ? `<span class="fc-loc"><span class="loc-dot"></span>${esc(exp.localizacao)}</span>`
     : '';
 
@@ -165,7 +173,6 @@ function cardFeedHTML(exp) {
     </div>`;
 }
 
-
 /* ============================================================
    RENDER — TIMELINE
    ============================================================ */
@@ -184,7 +191,7 @@ function renderTimeline(filtro) {
   lista.innerHTML = dados.map(exp => {
     const tags = [];
     if (exp.sentimento) tags.push(`<span class="tl-tag red">${sentiEmo(exp.sentimento)} ${esc(exp.sentimento)}</span>`);
-    if (exp.nota) tags.push(`<span class="tl-tag">${starsHTML(exp.nota, true)}</span>`);
+    if (exp.nota)       tags.push(`<span class="tl-tag">${starsHTML(notaParaEstrelas(exp.nota), true)}</span>`);
 
     return `
       <div class="tl-item">
@@ -207,12 +214,11 @@ function selChip(el, filtro) {
   renderTimeline(filtro);
 }
 
-
 /* ============================================================
    RENDER — LISTAS
    ============================================================ */
 function renderListas() {
-  const countFav = 0; // TODO: implementar quando backend adicionar campo favorito
+  const countFav = 0; // ExperienciaRespostaDto ainda não inclui favorito na resposta
   const el = document.getElementById('lc-count-fav');
   if (el) el.textContent = `${countFav} jogo${countFav !== 1 ? 's' : ''}`;
 }
@@ -222,16 +228,22 @@ function renderListas() {
    ============================================================ */
 function selecionarJogo(sel) {
   const id   = sel.value;
-  const jogo = JOGOS_MAP[id];
+  const jogo = _jogos.find(j => j.id === id);
 
   const elNome   = document.getElementById('reg-jogo-nome');
   const elMeta   = document.getElementById('reg-jogo-meta');
   const elPlacar = document.getElementById('reg-jogo-placar');
 
   if (jogo) {
-    if (elNome)   elNome.textContent   = jogo.nome;
-    if (elMeta)   elMeta.textContent   = `${jogo.data} · ${jogo.local}`;
-    if (elPlacar) elPlacar.textContent = jogo.placar;
+    const placar = (jogo.golsTime1 != null && jogo.golsTime2 != null)
+      ? `${jogo.golsTime1} × ${jogo.golsTime2}`
+      : '— × —';
+    const data = jogo.dataHora
+      ? new Date(jogo.dataHora).toLocaleDateString('pt-BR')
+      : '—';
+    if (elNome)   elNome.textContent   = `${jogo.time1} x ${jogo.time2}`;
+    if (elMeta)   elMeta.textContent   = `${data} · ${jogo.estadio || '—'}`;
+    if (elPlacar) elPlacar.textContent = placar;
   } else {
     if (elNome)   elNome.textContent   = 'Selecione um jogo abaixo';
     if (elMeta)   elMeta.textContent   = '—';
@@ -265,11 +277,12 @@ async function salvarExperiencia() {
   const erroEl = document.getElementById('reg-erro');
   const btnEl  = document.querySelector('.btn-primary-full');
 
-  const jogoId     = document.getElementById('sel-jogo')?.value;
-  const comentario = document.getElementById('reg-comentario')?.value.trim();
-  const localizacao= document.getElementById('reg-localizacao')?.value.trim();
+  const jogoId      = document.getElementById('sel-jogo')?.value;
+  const comentario  = document.getElementById('reg-comentario')?.value.trim();
+  const localizacao = document.getElementById('reg-localizacao')?.value.trim();
+  const assistido   = document.getElementById('reg-assistido')?.checked ?? true;
+  const favorito    = document.getElementById('reg-favorito')?.checked ?? false;
 
-  // --- validações ---
   function mostrarErro(msg) {
     if (erroEl) { erroEl.textContent = msg; erroEl.style.display = 'block'; }
   }
@@ -295,14 +308,15 @@ async function salvarExperiencia() {
   }
 
   const payload = {
-    idJogo: jogoId,
-    nota: converterNota(_starSelected),
+    idJogo:     jogoId,
+    nota:       converterNota(_starSelected),
     sentimento: _sentSelected,
     comentario,
     localizacao,
+    assistido,
+    favorito,
   };
 
-  // estado de carregamento
   if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Publicando...'; }
 
   try {
@@ -317,13 +331,11 @@ async function salvarExperiencia() {
       return;
     }
 
-    // sucesso: adiciona ao cache local e atualiza toda a UI
     if (res.data) _experiencias.unshift(res.data);
     renderFeed();
     renderTimeline(_tlFiltro);
     renderListas();
 
-    // feedback visual de sucesso
     if (btnEl) { btnEl.textContent = '✓ Publicado!'; btnEl.style.background = '#16a34a'; }
     setTimeout(() => {
       showScreen('home');
@@ -339,7 +351,6 @@ async function salvarExperiencia() {
     mostrarErro('Erro de conexão. Verifique sua internet e tente novamente.');
   } finally {
     if (btnEl && btnEl.disabled) {
-      // restaura caso não tenha redirecionado (erro)
       setTimeout(() => {
         if (btnEl.disabled) {
           btnEl.disabled = false;
@@ -400,9 +411,27 @@ function set(id, val) {
   if (el) el.textContent = val;
 }
 
-/** Gera HTML de estrelas preenchidas/vazias */
-function starsHTML(nota, compact = false) {
-  const n = Math.round(nota || 0);
+/** Converte o enum Nota (string ou int) para estrelas 1–5 */
+function notaParaEstrelas(nota) {
+  // com JsonStringEnumConverter: chega como "Tres", "Quatro", etc.
+  if (typeof nota === 'string') {
+    const mapa = {
+      'Zero': 0, 'Meio': 0,
+      'Um': 1, 'UmEMeio': 1,
+      'Dois': 2, 'DoisEMeio': 2,
+      'Tres': 3, 'TresEMeio': 3,
+      'Quatro': 4, 'QuatroEMeio': 4,
+      'Cinco': 5,
+    };
+    return mapa[nota] ?? 0;
+  }
+  // sem o conversor: chega como int (10, 20, 30...)
+  return Math.round((nota || 0) / 10);
+}
+
+/** Gera HTML de estrelas preenchidas/vazias (espera valor 1–5) */
+function starsHTML(n, compact = false) {
+  n = Math.round(n || 0);
   let html = '';
   for (let i = 1; i <= 5; i++) {
     html += `<span class="star-icon${i > n ? ' empty' : ''}">★</span>`;
@@ -439,7 +468,7 @@ function formatarData(iso) {
   }
 }
 
-/** Converte estrelas (1–5) para o valor do enum Nota no backend */
+/** Converte estrelas (1–5) para o valor int do enum Nota esperado pelo backend */
 function converterNota(estrelas) {
   const mapa = { 1: 10, 2: 20, 3: 30, 4: 40, 5: 50 };
   return mapa[estrelas] ?? 0;
