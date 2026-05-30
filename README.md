@@ -121,7 +121,7 @@ JSON WEB TOKEN
 MyCupSystem/
 │
 ├── 📁 docs/                            
-│   ├── requisitos.pdf
+│   ├── DiarioDigitalCopa2026-REQUISITOS.docx.pdf
 │   └── 📁 diagramas/                     
 │
 ├── 📁 DiarioCopaFront/                             
