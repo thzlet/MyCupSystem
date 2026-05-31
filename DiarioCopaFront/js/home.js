@@ -9,13 +9,18 @@
    Endpoints esperados no back-end (DiarioCopaApi):
      GET  /api/usuarios/perfil                  → PerfilUsuarioDto
      GET  /api/experiencias/listar-experiencias → [ ExperienciaRespostaDto ]
-     POST /api/experiencias/criar-experiencia   → ExperienciaRespostaDto
+     POST /api/experiencias/criar-experiencia   → { mensagem, id }
      GET  /api/jogos                            → [ JogoRespostaDto ]
+     GET  /api/favoritos                        → [ FavoritoRespostaDto ]   (RF14)
+     POST /api/favoritos/{idJogo}               → { mensagem }              (RF14)
+     DELETE /api/favoritos/{idJogo}             → { mensagem }              (RF14)
+     GET  /api/listas                           → [ ListaRespostaDto ]      (RF13)
+     POST /api/listas                           → { mensagem, idLista, ... } (RF13)
 
    ExperienciaRespostaDto (backend real):
-     { idExperiencia, jogoTitulo, dataJogo, fase,
+     { idExperiencia, idJogo, jogoTitulo, dataJogo, fase,
        golsTime1, golsTime2, nota, sentimento,
-       comentario, localizacao, dataRegistro }
+       comentario, localizacao, dataRegistro, assistido, favorito }
 
    JogoRespostaDto (backend real):
      { id, time1, time2, dataHora, estadio, fase, golsTime1, golsTime2 }
@@ -24,11 +29,13 @@
 /* ============================================================
    ESTADO GLOBAL
    ============================================================ */
-let _starSelected = 0;    // nota selecionada (1–5)
-let _sentSelected = '';   // sentimento selecionado
-let _tlFiltro     = '';   // filtro ativo na timeline
-let _experiencias = [];   // cache local das experiências
-let _jogos        = [];   // cache dos jogos carregados da API
+let _starSelected  = 0;    // nota selecionada (1–5)
+let _sentSelected  = '';   // sentimento selecionado
+let _tlFiltro      = '';   // filtro ativo na timeline
+let _experiencias  = [];   // cache local das experiências
+let _jogos         = [];   // cache dos jogos carregados da API
+let _favoritos     = [];   // cache dos jogos favoritos (RF14)
+let _listas        = [];   // cache das listas criadas pelo usuário (RF13)
 
 /* ============================================================
    INICIALIZAÇÃO
@@ -43,6 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await carregarPerfil();
   await carregarJogos();
   await carregarExperiencias();
+  await carregarFavoritos();   // RF14
+  await carregarListas();      // RF13
 });
 
 /* ============================================================
@@ -83,7 +92,7 @@ async function carregarJogos() {
 }
 
 /* ============================================================
-   CARREGAR EXPERIÊNCIAS (feed + timeline + listas)
+   CARREGAR EXPERIÊNCIAS (feed + timeline)
    ============================================================ */
 async function carregarExperiencias() {
   try {
@@ -103,7 +112,109 @@ async function carregarExperiencias() {
 
   renderFeed();
   renderTimeline(_tlFiltro);
+}
+
+/* ============================================================
+   RF14 — CARREGAR FAVORITOS
+   ============================================================ */
+async function carregarFavoritos() {
+  try {
+    const res = await apiFetch('/api/favoritos');
+    _favoritos = (res.ok && Array.isArray(res.data)) ? res.data : [];
+  } catch (err) {
+    console.warn('Erro ao buscar favoritos:', err);
+    _favoritos = [];
+  }
   renderListas();
+}
+
+/* ============================================================
+   RF14 — FAVORITAR / DESFAVORITAR JOGO
+   ============================================================ */
+async function toggleFavorito(idJogo) {
+  const jaFavoritou = _favoritos.some(f => f.idJogo === idJogo);
+
+  try {
+    const res = await apiFetch(`/api/favoritos/${idJogo}`, {
+      method: jaFavoritou ? 'DELETE' : 'POST'
+    });
+
+    if (!res.ok) {
+      console.warn('Erro ao alterar favorito:', res.data?.mensagem);
+      return;
+    }
+
+    if (jaFavoritou) {
+      _favoritos = _favoritos.filter(f => f.idJogo !== idJogo);
+    } else {
+      // busca os dados completos do jogo para incluir no cache
+      const jogo = _jogos.find(j => j.id === idJogo);
+      if (jogo) {
+        _favoritos.push({
+          idJogo:     jogo.id,
+          jogoTitulo: `${jogo.time1} x ${jogo.time2}`,
+          dataHora:   jogo.dataHora,
+          fase:       jogo.fase,
+          golsTime1:  jogo.golsTime1,
+          golsTime2:  jogo.golsTime2,
+          dataCriacao: new Date().toISOString()
+        });
+      }
+    }
+
+    renderListas();
+  } catch (err) {
+    console.warn('Erro de conexão ao favoritar:', err);
+  }
+}
+
+/* ============================================================
+   RF13 — CARREGAR LISTAS
+   ============================================================ */
+async function carregarListas() {
+  try {
+    const res = await apiFetch('/api/listas');
+    _listas = (res.ok && Array.isArray(res.data)) ? res.data : [];
+  } catch (err) {
+    console.warn('Erro ao buscar listas:', err);
+    _listas = [];
+  }
+  renderListas();
+}
+
+/* ============================================================
+   RF13 — CRIAR NOVA LISTA (abre prompt simples)
+   ============================================================ */
+async function criarNovaLista() {
+  const titulo = prompt('Nome da lista:');
+  if (!titulo || !titulo.trim()) return;
+
+  const descricao = prompt('Descrição da lista:');
+  if (descricao === null) return; // usuário cancelou
+
+  try {
+    const res = await apiFetch('/api/listas', {
+      method: 'POST',
+      body: JSON.stringify({ tituloLista: titulo.trim(), descricao: descricao.trim() })
+    });
+
+    if (!res.ok) {
+      alert(res.data?.mensagem || 'Erro ao criar lista.');
+      return;
+    }
+
+    _listas.push({
+      idLista:        res.data.idLista,
+      tituloLista:    res.data.tituloLista,
+      descricao:      res.data.descricao,
+      quantidadeJogos: 0
+    });
+
+    renderListas();
+  } catch (err) {
+    console.warn('Erro ao criar lista:', err);
+    alert('Erro de conexão. Tente novamente.');
+  }
 }
 
 /* ============================================================
@@ -148,10 +259,10 @@ function renderFeed() {
 }
 
 function cardFeedHTML(exp) {
-  const stars    = starsHTML(notaParaEstrelas(exp.nota));
+  const stars     = starsHTML(notaParaEstrelas(exp.nota));
   const sentEmoji = sentiEmo(exp.sentimento);
-  const data     = formatarData(exp.dataRegistro);
-  const loc      = exp.localizacao
+  const data      = formatarData(exp.dataRegistro);
+  const loc       = exp.localizacao
     ? `<span class="fc-loc"><span class="loc-dot"></span>${esc(exp.localizacao)}</span>`
     : '';
 
@@ -174,7 +285,7 @@ function cardFeedHTML(exp) {
 }
 
 /* ============================================================
-   RENDER — TIMELINE
+   RF12 — RENDER — TIMELINE (com filtros)
    ============================================================ */
 function renderTimeline(filtro) {
   _tlFiltro = filtro;
@@ -182,6 +293,13 @@ function renderTimeline(filtro) {
   if (!lista) return;
 
   let dados = [..._experiencias].sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro));
+
+  // Aplica filtro
+  if (filtro === 'favorito') {
+    dados = dados.filter(e => e.favorito === true);
+  } else if (filtro === 'assistido') {
+    dados = dados.filter(e => e.assistido === true);
+  }
 
   if (dados.length === 0) {
     lista.innerHTML = '<p class="feed-vazio">Nenhuma entrada encontrada para esse filtro.</p>';
@@ -192,6 +310,8 @@ function renderTimeline(filtro) {
     const tags = [];
     if (exp.sentimento) tags.push(`<span class="tl-tag red">${sentiEmo(exp.sentimento)} ${esc(exp.sentimento)}</span>`);
     if (exp.nota)       tags.push(`<span class="tl-tag">${starsHTML(notaParaEstrelas(exp.nota), true)}</span>`);
+    if (exp.assistido)  tags.push(`<span class="tl-tag">✅ Assistido</span>`);
+    if (exp.favorito)   tags.push(`<span class="tl-tag">⭐ Favorito</span>`);
 
     return `
       <div class="tl-item">
@@ -215,12 +335,48 @@ function selChip(el, filtro) {
 }
 
 /* ============================================================
-   RENDER — LISTAS
+   RF13 + RF14 — RENDER — LISTAS
    ============================================================ */
 function renderListas() {
-  const countFav = 0; // ExperienciaRespostaDto ainda não inclui favorito na resposta
-  const el = document.getElementById('lc-count-fav');
-  if (el) el.textContent = `${countFav} jogo${countFav !== 1 ? 's' : ''}`;
+  const grid = document.getElementById('lists-grid');
+  if (!grid) return;
+
+  const countFav = _favoritos.length;
+
+  // Card fixo de favoritos + cards de listas criadas + card de criar nova
+  let html = `
+    <div class="list-card">
+      <div class="lc-icon">⭐</div>
+      <div class="lc-name">Meus Favoritos</div>
+      <div class="lc-desc">Os jogos que mais me marcaram emocionalmente durante a Copa 2026.</div>
+      <div class="lc-count" id="lc-count-fav">${countFav} jogo${countFav !== 1 ? 's' : ''}</div>
+    </div>`;
+
+  _listas.forEach(lista => {
+    html += `
+      <div class="list-card">
+        <div class="lc-icon">📋</div>
+        <div class="lc-name">${esc(lista.tituloLista)}</div>
+        <div class="lc-desc">${esc(lista.descricao)}</div>
+        <div class="lc-count">${lista.quantidadeJogos} jogo${lista.quantidadeJogos !== 1 ? 's' : ''}</div>
+      </div>`;
+  });
+
+  html += `
+    <div class="list-card" onclick="criarNovaLista()"
+      style="border:2px dashed rgba(10,34,64,0.12);background:rgba(10,34,64,0.02);
+             display:flex;flex-direction:column;align-items:center;justify-content:center;
+             min-height:160px;cursor:pointer">
+      <div style="font-size:36px;margin-bottom:8px;opacity:0.3">+</div>
+      <div style="font-size:13px;color:var(--gray);font-weight:500">Criar nova lista</div>
+    </div>`;
+
+  grid.innerHTML = html;
+
+  // Vincula botões de criar nova lista no header também
+  document.querySelectorAll('.btn-create-list').forEach(btn => {
+    btn.onclick = criarNovaLista;
+  });
 }
 
 /* ============================================================
@@ -331,9 +487,8 @@ async function salvarExperiencia() {
       return;
     }
 
-    if (res.data) _experiencias.unshift(res.data);
-    renderFeed();
-    renderTimeline(_tlFiltro);
+    // Recarrega as experiências para obter o DTO completo atualizado
+    await carregarExperiencias();
     renderListas();
 
     if (btnEl) { btnEl.textContent = '✓ Publicado!'; btnEl.style.background = '#16a34a'; }

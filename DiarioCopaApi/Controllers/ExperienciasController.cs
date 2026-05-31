@@ -54,7 +54,6 @@ public class ExperienciasController : ControllerBase
         };
 
         _context.Experiencias.Add(novaExperiencia);
-        
         _context.SaveChanges();
 
         return Ok(new { mensagem = "Experiência registrada no seu diário com sucesso!", id = novaExperiencia.IdExperiencia });
@@ -72,21 +71,25 @@ public class ExperienciasController : ControllerBase
         .Select(e => new ExperienciaRespostaDto
         {
             IdExperiencia = e.IdExperiencia,
-            JogoTitulo = $"{e.Jogo!.Time1} x {e.Jogo!.Time2}",
-            DataJogo = e.Jogo.DataHora,
-            Fase = e.Jogo.Fase,
-            GolsTime1 = e.Jogo.GolsTime1,
-            GolsTime2 = e.Jogo.GolsTime2,
-            Nota = e.Nota,
-            Sentimento = e.Sentimento,
-            Comentario = e.Comentario,
-            Localizacao = e.Localizacao,
-            DataRegistro = e.DataCriacao
+            IdJogo        = e.IdJogo,
+            JogoTitulo    = $"{e.Jogo!.Time1} x {e.Jogo!.Time2}",
+            DataJogo      = e.Jogo.DataHora,
+            Fase          = e.Jogo.Fase,
+            GolsTime1     = e.Jogo.GolsTime1,
+            GolsTime2     = e.Jogo.GolsTime2,
+            Nota          = e.Nota,
+            Sentimento    = e.Sentimento,
+            Comentario    = e.Comentario,
+            Localizacao   = e.Localizacao,
+            DataRegistro  = e.DataCriacao,
+            Assistido     = e.Assistido,
+            Favorito      = e.Favorito
         })
         .ToList();
 
         return Ok(minhasExperiencias);
     }
+
     [HttpPut("{idExperiencia}")]
     public IActionResult EditarExperiencia(Guid idExperiencia, [FromBody] EditarExperienciaDto dto)
     {
