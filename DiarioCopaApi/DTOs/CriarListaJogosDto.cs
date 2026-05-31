@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace DiarioCopaApi.DTOs;
 
-public class CriarListaDto
+public class CriarListaJogosDto
 {
     [Required(ErrorMessage = "O título da lista é obrigatório.")]
     [MaxLength(100, ErrorMessage = "O título deve ter no máximo 100 caracteres.")]

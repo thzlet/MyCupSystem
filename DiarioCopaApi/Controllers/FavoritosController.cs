@@ -1,96 +1,81 @@
-using System.Security.Claims;
 using DiarioCopaApi.Data;
 using DiarioCopaApi.Models;
-using DiarioCopaApi.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DiarioCopaApi.Controllers;
 
-// ================================================================
-//  RF14 – Adicionar / Remover Jogo como Favorito
-// ================================================================
-
-[Route("api/favoritos")]
 [ApiController]
+[Route("api/favoritos")]
 [Authorize]
 public class FavoritosController : ControllerBase
 {
     private readonly DiarioCopaContext _context;
+    public FavoritosController(DiarioCopaContext context) => _context = context;
 
-    public FavoritosController(DiarioCopaContext context)
-    {
-        _context = context;
-    }
-
-    // POST /api/favoritos/{idJogo}
-    [HttpPost("{idJogo}")]
-    public IActionResult Favoritar(Guid idJogo)
-    {
-        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
-        var jogoExiste = _context.Jogos.Any(j => j.Id == idJogo);
-        if (!jogoExiste)
-            return NotFound(new { mensagem = "Jogo não encontrado." });
-
-        var jaFavoritou = _context.JogosFavoritos
-            .Any(jf => jf.IdUsuario == idUsuarioLogado && jf.IdJogo == idJogo);
-        if (jaFavoritou)
-            return Conflict(new { mensagem = "Este jogo já está nos seus favoritos." });
-
-        var favorito = new JogoFavorito
-        {
-            IdUsuario = idUsuarioLogado,
-            IdJogo    = idJogo
-        };
-
-        _context.JogosFavoritos.Add(favorito);
-        _context.SaveChanges();
-
-        return Ok(new { mensagem = "Jogo adicionado aos favoritos!" });
-    }
-
-    // DELETE /api/favoritos/{idJogo}
-    [HttpDelete("{idJogo}")]
-    public IActionResult Desfavoritar(Guid idJogo)
-    {
-        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
-        var favorito = _context.JogosFavoritos
-            .FirstOrDefault(jf => jf.IdUsuario == idUsuarioLogado && jf.IdJogo == idJogo);
-
-        if (favorito == null)
-            return NotFound(new { mensagem = "Este jogo não está nos seus favoritos." });
-
-        _context.JogosFavoritos.Remove(favorito);
-        _context.SaveChanges();
-
-        return Ok(new { mensagem = "Jogo removido dos favoritos." });
-    }
+    private Guid GetUserId() =>
+        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     // GET /api/favoritos
     [HttpGet]
-    public IActionResult ListarFavoritos()
+    public async Task<IActionResult> GetFavoritos()
     {
-        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
-        var favoritos = _context.JogosFavoritos
-            .Include(jf => jf.Jogo)
-            .Where(jf => jf.IdUsuario == idUsuarioLogado)
-            .OrderByDescending(jf => jf.DataCriacao)
-            .Select(jf => new
+        var userId = GetUserId();
+        var favoritos = await _context.JogosFavoritos
+            .Where(f => f.IdUsuario == userId)
+            .Include(f => f.Jogo)
+            .Select(f => new
             {
-                jf.IdJogo,
-                JogoTitulo = $"{jf.Jogo.Time1} x {jf.Jogo.Time2}",
-                jf.Jogo.DataHora,
-                jf.Jogo.Fase,
-                jf.Jogo.GolsTime1,
-                jf.Jogo.GolsTime2,
-                jf.DataCriacao
+                f.IdJogo,
+                JogoTitulo  = $"{f.Jogo.Time1} x {f.Jogo.Time2}",
+                f.Jogo.DataHora,
+                f.Jogo.Fase,
+                f.Jogo.GolsTime1,
+                f.Jogo.GolsTime2,
+                f.DataCriacao
             })
-            .ToList();
+            .OrderByDescending(f => f.DataCriacao)
+            .ToListAsync();
 
         return Ok(favoritos);
+    }
+
+    // POST /api/favoritos/{jogoId}
+    [HttpPost("{jogoId:guid}")]
+    public async Task<IActionResult> Favoritar(Guid jogoId)
+    {
+        var userId = GetUserId();
+
+        if (await _context.JogosFavoritos.AnyAsync(f => f.IdUsuario == userId && f.IdJogo == jogoId))
+            return Conflict(new { mensagem = "Jogo já está nos favoritos." });
+
+        if (!await _context.Jogos.AnyAsync(j => j.Id == jogoId))
+            return NotFound(new { mensagem = "Jogo não encontrado." });
+
+        _context.JogosFavoritos.Add(new JogoFavorito
+        {
+            IdUsuario = userId,
+            IdJogo    = jogoId
+        });
+
+        await _context.SaveChangesAsync();
+        return Ok(new { mensagem = "Jogo adicionado aos favoritos." });
+    }
+
+    // DELETE /api/favoritos/{jogoId}
+    [HttpDelete("{jogoId:guid}")]
+    public async Task<IActionResult> Desfavoritar(Guid jogoId)
+    {
+        var userId = GetUserId();
+        var fav = await _context.JogosFavoritos
+            .FirstOrDefaultAsync(f => f.IdUsuario == userId && f.IdJogo == jogoId);
+
+        if (fav == null) return NotFound(new { mensagem = "Jogo não está nos favoritos." });
+
+        _context.JogosFavoritos.Remove(fav);
+        await _context.SaveChangesAsync();
+        return Ok(new { mensagem = "Jogo removido dos favoritos." });
     }
 }

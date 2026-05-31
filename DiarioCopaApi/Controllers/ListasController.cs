@@ -1,161 +1,153 @@
 using DiarioCopaApi.Data;
 using DiarioCopaApi.Models;
-using DiarioCopaApi.DTOs;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using DiarioCopaApi.DTOs;
 
 namespace DiarioCopaApi.Controllers;
 
-[Route("api/listas")]
 [ApiController]
+[Route("api/listas")]
 [Authorize]
-public class ListaJogosController : ControllerBase
+public class ListasController : ControllerBase
 {
     private readonly DiarioCopaContext _context;
+    public ListasController(DiarioCopaContext context) => _context = context;
 
-    public ListaJogosController(DiarioCopaContext context)
+    private Guid GetUserId() =>
+        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    // GET /api/listas
+    [HttpGet]
+    public async Task<IActionResult> GetListas()
     {
-        _context = context;
+        var userId = GetUserId();
+        var listas = await _context.ListasJogos
+            .Where(l => l.IdUsuario == userId)
+            .Include(l => l.Jogos)
+            .Select(l => new
+            {
+                l.IdLista,
+                l.TituloLista,
+                l.Descricao,
+                QuantidadeJogos = l.Jogos.Count,
+                Jogos = l.Jogos.Select(j => new
+                {
+                    j.Id, j.Time1, j.Time2, j.DataHora, j.Fase,
+                    j.Estadio, j.GolsTime1, j.GolsTime2
+                })
+            })
+            .ToListAsync();
+
+        return Ok(listas);
     }
 
-    [HttpPost]
-    public IActionResult CriarLista([FromBody] CriarListaDto dto)
+    // GET /api/listas/{id}
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetLista(Guid id)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        var userId = GetUserId();
+        var lista = await _context.ListasJogos
+            .Where(l => l.IdLista == id && l.IdUsuario == userId)
+            .Include(l => l.Jogos)
+            .Select(l => new
+            {
+                l.IdLista,
+                l.TituloLista,
+                l.Descricao,
+                Jogos = l.Jogos.Select(j => new
+                {
+                    j.Id, j.Time1, j.Time2, j.DataHora, j.Fase,
+                    j.Estadio, j.GolsTime1, j.GolsTime2
+                })
+            })
+            .FirstOrDefaultAsync();
 
-        var idUsuario = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        if (lista == null) return NotFound(new { mensagem = "Lista não encontrada." });
+        return Ok(lista);
+    }
 
-        var novaLista = new ListaJogos
+    // POST /api/listas
+    [HttpPost]
+    public async Task<IActionResult> CriarLista([FromBody] CriarListaJogosDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.TituloLista))
+            return BadRequest(new { mensagem = "O título da lista é obrigatório." });
+
+        var lista = new ListaJogos
         {
+            IdUsuario   = GetUserId(),
             TituloLista = dto.TituloLista.Trim(),
-            Descricao = dto.Descricao?.Trim(),
-            IdUsuario = idUsuario
+            Descricao   = (dto.Descricao ?? "").Trim()
         };
 
-        if (dto.IdJogos != null && dto.IdJogos.Any())
-        {
-            var jogos = _context.Jogos
-                .Where(j => dto.IdJogos.Contains(j.Id))
-                .ToList();
-
-            novaLista.Jogos = jogos;
-        }
-
-        _context.ListasJogos.Add(novaLista);
-        _context.SaveChanges();
+        _context.ListasJogos.Add(lista);
+        await _context.SaveChangesAsync();
 
         return Ok(new
         {
-            mensagem    = "Lista criada com sucesso!",
-            idLista     = novaLista.IdLista,
-            tituloLista = novaLista.TituloLista,
-            descricao   = novaLista.Descricao
+            lista.IdLista,
+            lista.TituloLista,
+            lista.Descricao,
+            QuantidadeJogos = 0
         });
     }
 
-    [HttpPost("{idLista}/jogos/{idJogo}")]
-    public IActionResult AdicionarJogo(Guid idLista, Guid idJogo)
+    // POST /api/listas/{id}/jogos/{jogoId}
+    [HttpPost("{id:guid}/jogos/{jogoId:guid}")]
+    public async Task<IActionResult> AdicionarJogo(Guid id, Guid jogoId)
     {
-        var idUsuario = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
-        var lista = _context.ListasJogos
+        var userId = GetUserId();
+        var lista = await _context.ListasJogos
             .Include(l => l.Jogos)
-            .FirstOrDefault(l => l.IdLista == idLista && l.IdUsuario == idUsuario);
+            .FirstOrDefaultAsync(l => l.IdLista == id && l.IdUsuario == userId);
 
-        if (lista == null)
-            return NotFound(new { mensagem = "Lista não encontrada." });
+        if (lista == null) return NotFound(new { mensagem = "Lista não encontrada." });
 
-        var jogo = _context.Jogos.FirstOrDefault(j => j.Id == idJogo);
+        if (lista.Jogos.Any(j => j.Id == jogoId))
+            return Conflict(new { mensagem = "Jogo já está nessa lista." });
 
-        if (jogo == null)
-            return NotFound(new { mensagem = "Jogo não encontrado." });
-
-        if (lista.Jogos.Any(j => j.Id == idJogo))
-            return Conflict(new { mensagem = "Este jogo já está na lista." });
+        var jogo = await _context.Jogos.FindAsync(jogoId);
+        if (jogo == null) return NotFound(new { mensagem = "Jogo não encontrado." });
 
         lista.Jogos.Add(jogo);
-        _context.SaveChanges();
-
-        return Ok(new { mensagem = "Jogo adicionado com sucesso!" });
+        await _context.SaveChangesAsync();
+        return Ok(new { mensagem = "Jogo adicionado à lista." });
     }
-    [HttpGet]
-    public IActionResult ListarListaJogos()
-    {
-        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var minhasListas = _context.ListasJogos
-            .Where(l => l.IdUsuario == idUsuarioLogado)
-            .Select(l => new ListaJogosRespostaDto
-            {
-                IdListaJogos = l.IdLista,
-                Titulo = l.TituloLista,
-                Descricao = l.Descricao,
-                Jogos = l.Jogos.ToList(),
-                QuantidadeJogos = l.Jogos.Count
-            })
-            .ToList();
 
-        return Ok(minhasListas);
-    }
-    [HttpGet("{idLista}")]
-    [Authorize]
-    public IActionResult BuscarLista(Guid idLista)
+    // DELETE /api/listas/{id}/jogos/{jogoId}
+    [HttpDelete("{id:guid}/jogos/{jogoId:guid}")]
+    public async Task<IActionResult> RemoverJogo(Guid id, Guid jogoId)
     {
-        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        
-        var lista = _context.ListasJogos
-            .Where(l => l.IdLista == idLista && l.IdUsuario == idUsuarioLogado)
-            .Select(l => new ListaJogosRespostaDto
-            {
-                IdListaJogos = l.IdLista,
-                Titulo = l.TituloLista,
-                Descricao = l.Descricao,
-                Jogos = l.Jogos.ToList(),
-                QuantidadeJogos = l.Jogos.Count
-            })
-            .FirstOrDefault();
+        var userId = GetUserId();
+        var lista = await _context.ListasJogos
+            .Include(l => l.Jogos)
+            .FirstOrDefaultAsync(l => l.IdLista == id && l.IdUsuario == userId);
 
-        if (lista == null) return NotFound();
-        
-        return Ok(lista);
+        if (lista == null) return NotFound(new { mensagem = "Lista não encontrada." });
+
+        var jogo = lista.Jogos.FirstOrDefault(j => j.Id == jogoId);
+        if (jogo == null) return NotFound(new { mensagem = "Jogo não está nessa lista." });
+
+        lista.Jogos.Remove(jogo);
+        await _context.SaveChangesAsync();
+        return Ok(new { mensagem = "Jogo removido da lista." });
     }
-    [HttpDelete("{idLista}")]
-    [Authorize]
-    public IActionResult DeletarLista(Guid idLista)
+
+    // DELETE /api/listas/{id}
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeletarLista(Guid id)
     {
-        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        
-        var lista = _context.ListasJogos
-            .FirstOrDefault(l => l.IdLista == idLista && l.IdUsuario == idUsuarioLogado);
+        var userId = GetUserId();
+        var lista = await _context.ListasJogos
+            .FirstOrDefaultAsync(l => l.IdLista == id && l.IdUsuario == userId);
 
         if (lista == null) return NotFound(new { mensagem = "Lista não encontrada." });
 
         _context.ListasJogos.Remove(lista);
-        _context.SaveChanges();
-
-        return Ok(new { mensagem = "Lista deletada com sucesso!" });      
-    }
-    [HttpDelete("{idLista}/jogos{idJogo}")]
-    [Authorize]
-    public IActionResult RemoverJogo(Guid idLista, Guid idJogo)
-    {
-        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        
-        var lista = _context.ListasJogos
-            .Include(l => l.Jogos)
-            .FirstOrDefault(l => l.IdLista == idLista && l.IdUsuario == idUsuarioLogado);
-
-        if (lista == null) return NotFound(new { mensagem = "Lista não encontrada." });
-
-        var jogo = lista.Jogos.FirstOrDefault(j => j.Id == idJogo);
-
-        if (jogo == null) return NotFound(new { mensagem = "Jogo não encontrado na lista." });
-
-        lista.Jogos.Remove(jogo);
-        _context.SaveChanges();
-
-        return Ok(new { mensagem = "Jogo removido da lista com sucesso!" });     
+        await _context.SaveChangesAsync();
+        return Ok(new { mensagem = "Lista deletada." });
     }
 }
