@@ -8,8 +8,9 @@ using System.Security.Claims;
 
 namespace DiarioCopaApi.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/listas")]
 [ApiController]
+[Authorize]
 public class ListaJogosController : ControllerBase
 {
     private readonly DiarioCopaContext _context;
@@ -19,8 +20,7 @@ public class ListaJogosController : ControllerBase
         _context = context;
     }
 
-    [HttpPost("criar")]
-    [Authorize]
+    [HttpPost]
     public IActionResult CriarLista([FromBody] CriarListaDto dto)
     {
         if (!ModelState.IsValid)
@@ -47,12 +47,16 @@ public class ListaJogosController : ControllerBase
         _context.ListasJogos.Add(novaLista);
         _context.SaveChanges();
 
-        return CreatedAtAction(nameof(CriarLista), new { id = novaLista.IdLista },
-            new { mensagem = "Lista criada com sucesso!", id = novaLista.IdLista });
+        return Ok(new
+        {
+            mensagem    = "Lista criada com sucesso!",
+            idLista     = novaLista.IdLista,
+            tituloLista = novaLista.TituloLista,
+            descricao   = novaLista.Descricao
+        });
     }
 
     [HttpPost("{idLista}/jogos/{idJogo}")]
-    [Authorize]
     public IActionResult AdicionarJogo(Guid idLista, Guid idJogo)
     {
         var idUsuario = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -77,8 +81,7 @@ public class ListaJogosController : ControllerBase
 
         return Ok(new { mensagem = "Jogo adicionado com sucesso!" });
     }
-    [HttpGet("listar-listas")]
-    [Authorize]
+    [HttpGet]
     public IActionResult ListarListaJogos()
     {
         var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
