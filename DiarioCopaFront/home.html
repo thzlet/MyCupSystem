@@ -168,24 +168,54 @@
       <div class="lists-wrap">
         <div class="sec-hdr" style="margin-bottom:20px">
           <div class="sec-title">Minhas Listas</div>
-          <button class="btn-create-list">+ Criar nova lista</button>
+          <button class="btn-create-list" onclick="abrirFormLista()">+ Criar nova lista</button>
         </div>
-        <div class="lists-grid" id="lists-grid">
-          <div class="list-card">
-            <div class="lc-icon">⭐</div>
-            <div class="lc-name">Meus Favoritos</div>
-            <div class="lc-desc">Os jogos que mais me marcaram emocionalmente durante a Copa 2026.</div>
-            <div class="lc-count" id="lc-count-fav">0 jogos</div>
+
+        <!-- Formulário inline de criação -->
+        <div id="form-criar-lista" class="lista-form-card hidden">
+          <div class="lfcard-title">Nova lista</div>
+          <div class="lfcard-row">
+            <div class="fg" style="flex:1">
+              <label>Título</label>
+              <input id="lf-titulo" type="text" maxlength="50" placeholder="Ex: Jogos do Brasil" />
+            </div>
+            <div class="fg" style="flex:2">
+              <label>Descrição</label>
+              <input id="lf-desc" type="text" maxlength="200" placeholder="Breve descrição..." />
+            </div>
           </div>
-          <div class="list-card" style="border:2px dashed rgba(10,34,64,0.12);background:rgba(10,34,64,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;cursor:pointer">
-            <div style="font-size:36px;margin-bottom:8px;opacity:0.3">+</div>
-            <div style="font-size:13px;color:var(--gray);font-weight:500">Criar nova lista</div>
+          <p id="lf-erro" class="reg-erro" style="display:none"></p>
+          <div class="lfcard-btns">
+            <button class="btn-primary-sm" onclick="salvarNovaLista()">Salvar</button>
+            <button class="btn-outline-sm" onclick="fecharFormLista()">Cancelar</button>
           </div>
         </div>
+
+        <div class="lists-grid" id="lists-grid"></div>
+        <p id="listas-empty" class="feed-vazio" style="display:none">Você ainda não criou nenhuma lista.</p>
       </div>
     </div>
 
   </div><!-- /app-shell -->
+
+  <!-- ===== MODAL DE LISTA ===== -->
+  <div id="modal-lista" class="lista-modal" style="display:none">
+    <div class="lista-modal-box">
+      <div class="lm-head">
+        <span class="lm-title" id="lm-titulo"></span>
+        <button class="lm-close" onclick="fecharModalLista()">✕</button>
+      </div>
+      <div class="lm-add-row">
+        <select id="lm-sel-jogo">
+          <option value="">Selecione um jogo para adicionar...</option>
+        </select>
+        <button class="btn-primary-sm" onclick="adicionarJogoLista()">Adicionar</button>
+      </div>
+      <p id="lm-erro" class="reg-erro" style="display:none"></p>
+      <div id="lm-jogos" class="lm-jogos-lista"></div>
+      <p id="lm-empty" class="feed-vazio" style="display:none">Nenhum jogo nessa lista ainda.</p>
+    </div>
+  </div>
 
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
