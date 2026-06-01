@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   await carregarExperiencias();
   await carregarFavoritos();   // RF14
   await carregarListas();      // RF13
+
+  // Suporte a ?screen=listas (usado pelo redirect de listas.html)
+  const params = new URLSearchParams(window.location.search);
+  const screenParam = params.get('screen');
+  if (screenParam) showScreen(screenParam);
 });
 
 /* ============================================================
@@ -185,36 +190,151 @@ async function carregarListas() {
 /* ============================================================
    RF13 — CRIAR NOVA LISTA (abre prompt simples)
    ============================================================ */
-async function criarNovaLista() {
-  const titulo = prompt('Nome da lista:');
-  if (!titulo || !titulo.trim()) return;
+// ── Form criar lista ──────────────────────────────────────────
+function abrirFormLista() {
+  const form = document.getElementById('form-criar-lista');
+  if (form) { form.style.display = ''; document.getElementById('lf-titulo')?.focus(); }
+}
+function fecharFormLista() {
+  const form = document.getElementById('form-criar-lista');
+  if (form) { form.style.display = 'none'; }
+  const t = document.getElementById('lf-titulo'); if (t) t.value = '';
+  const d = document.getElementById('lf-desc');   if (d) d.value = '';
+  const e = document.getElementById('lf-erro');   if (e) e.style.display = 'none';
+}
 
-  const descricao = prompt('Descrição da lista:');
-  if (descricao === null) return; // usuário cancelou
+async function salvarNovaLista() {
+  const titulo   = document.getElementById('lf-titulo')?.value.trim();
+  const descricao = document.getElementById('lf-desc')?.value.trim() || '';
+  const erroEl   = document.getElementById('lf-erro');
+
+  function mostrarErro(msg) { if (erroEl) { erroEl.textContent = msg; erroEl.style.display = 'block'; } }
+  if (erroEl) erroEl.style.display = 'none';
+
+  if (!titulo) { mostrarErro('Informe um título para a lista.'); return; }
 
   try {
     const res = await apiFetch('/api/listas', {
       method: 'POST',
-      body: JSON.stringify({ tituloLista: titulo.trim(), descricao: descricao.trim() })
+      body: JSON.stringify({ tituloLista: titulo, descricao })
     });
-
-    if (!res.ok) {
-      alert(res.data?.mensagem || 'Erro ao criar lista.');
-      return;
-    }
+    if (!res.ok) { mostrarErro(res.data?.mensagem || 'Erro ao criar lista.'); return; }
 
     _listas.push({
-      idLista:        res.data.idLista,
-      tituloLista:    res.data.tituloLista,
-      descricao:      res.data.descricao,
+      idLista:         res.data.idLista,
+      tituloLista:     res.data.tituloLista || titulo,
+      descricao:       res.data.descricao   || descricao,
       quantidadeJogos: 0
     });
-
+    fecharFormLista();
     renderListas();
   } catch (err) {
-    console.warn('Erro ao criar lista:', err);
-    alert('Erro de conexão. Tente novamente.');
+    mostrarErro('Erro de conexão. Tente novamente.');
   }
+}
+
+// alias mantido para compatibilidade
+async function criarNovaLista() { abrirFormLista(); }
+
+// ── Estado modal ───────────────────────────────────────────────
+let _listaModalId = null;
+
+async function abrirModalLista(idLista, titulo) {
+  _listaModalId = idLista;
+  const modal = document.getElementById('modal-lista');
+  if (!modal) return;
+  document.getElementById('lm-titulo').textContent = titulo;
+  document.getElementById('lm-erro').style.display = 'none';
+  modal.style.display = 'flex';
+
+  // popula select de jogos
+  const sel = document.getElementById('lm-sel-jogo');
+  sel.innerHTML = '<option value="">Selecione um jogo para adicionar...</option>';
+  _jogos.forEach(j => {
+    const opt = document.createElement('option');
+    opt.value = j.id;
+    opt.textContent = `${j.time1} × ${j.time2} — ${j.fase || ''}`;
+    sel.appendChild(opt);
+  });
+
+  await carregarJogosModal(idLista);
+}
+
+function fecharModalLista() {
+  const modal = document.getElementById('modal-lista');
+  if (modal) modal.style.display = 'none';
+  _listaModalId = null;
+}
+
+// fecha modal ao clicar no backdrop
+document.addEventListener('click', e => {
+  if (e.target && e.target.id === 'modal-lista') fecharModalLista();
+});
+
+async function adicionarJogoLista() {
+  const jogoId = document.getElementById('lm-sel-jogo')?.value;
+  const erroEl = document.getElementById('lm-erro');
+  if (erroEl) erroEl.style.display = 'none';
+
+  if (!jogoId) { if (erroEl) { erroEl.textContent = 'Selecione um jogo.'; erroEl.style.display = 'block'; } return; }
+
+  const res = await apiFetch(`/api/listas/${_listaModalId}/jogos/${jogoId}`, { method: 'POST' });
+  if (!res.ok) {
+    if (erroEl) { erroEl.textContent = res.data?.mensagem || 'Erro ao adicionar jogo.'; erroEl.style.display = 'block'; }
+    return;
+  }
+  document.getElementById('lm-sel-jogo').value = '';
+  await carregarJogosModal(_listaModalId);
+  // atualiza count no card
+  const card = document.querySelector(`.list-card[data-id="${_listaModalId}"]`);
+  if (card) {
+    const countEl = card.querySelector('.lc-count');
+    const lista = _listas.find(l => l.idLista === _listaModalId);
+    if (lista) { lista.quantidadeJogos = (lista.quantidadeJogos || 0) + 1; if (countEl) countEl.textContent = formatCount(lista.quantidadeJogos); }
+  }
+}
+
+async function carregarJogosModal(idLista) {
+  const container = document.getElementById('lm-jogos');
+  const emptyEl   = document.getElementById('lm-empty');
+  if (!container) return;
+  container.innerHTML = '<p style="color:var(--gray);text-align:center;padding:1rem;font-size:13px">Carregando...</p>';
+
+  const res = await apiFetch(`/api/listas/${idLista}`);
+  if (!res.ok) { container.innerHTML = '<p style="color:var(--red);text-align:center">Erro ao carregar.</p>'; return; }
+
+  const jogos = res.data.jogos || [];
+  container.innerHTML = '';
+  if (!jogos.length) { if (emptyEl) emptyEl.style.display = ''; return; }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  jogos.forEach(j => {
+    const item = document.createElement('div');
+    item.className = 'lm-jogo-item';
+    const data   = j.dataHora ? new Date(j.dataHora).toLocaleDateString('pt-BR') : '—';
+    const placar = (j.golsTime1 != null && j.golsTime2 != null) ? `${j.golsTime1} × ${j.golsTime2}` : '— × —';
+    item.innerHTML = `
+      <div class="lm-jogo-info">
+        <div class="lm-jogo-placar">${esc(j.time1)} × ${esc(j.time2)} <small style="font-weight:400;color:var(--gray)">${placar}</small></div>
+        <div class="lm-jogo-meta">${esc(j.fase || '')} · ${data} · ${esc(j.estadio || '')}</div>
+      </div>
+      <button class="lm-btn-rem" data-jogo="${j.id}">Remover</button>`;
+    item.querySelector('.lm-btn-rem').addEventListener('click', async e => {
+      const jogoId = e.target.dataset.jogo;
+      await apiFetch(`/api/listas/${_listaModalId}/jogos/${jogoId}`, { method: 'DELETE' });
+      item.remove();
+      const lista = _listas.find(l => l.idLista === _listaModalId);
+      if (lista) { lista.quantidadeJogos = Math.max(0, (lista.quantidadeJogos||1) - 1); }
+      const card = document.querySelector(`.list-card[data-id="${_listaModalId}"]`);
+      if (card && lista) { const c = card.querySelector('.lc-count'); if (c) c.textContent = formatCount(lista.quantidadeJogos); }
+      if (!container.querySelector('.lm-jogo-item') && emptyEl) emptyEl.style.display = '';
+    });
+    container.appendChild(item);
+  });
+}
+
+function formatCount(n) {
+  return `${n} jogo${n !== 1 ? 's' : ''}`;
 }
 
 /* ============================================================
@@ -338,45 +458,61 @@ function selChip(el, filtro) {
    RF13 + RF14 — RENDER — LISTAS
    ============================================================ */
 function renderListas() {
-  const grid = document.getElementById('lists-grid');
+  const grid     = document.getElementById('lists-grid');
+  const emptyEl  = document.getElementById('listas-empty');
   if (!grid) return;
 
+  grid.innerHTML = '';
+
+  // Card fixo de favoritos
   const countFav = _favoritos.length;
+  const favCard  = document.createElement('div');
+  favCard.className = 'list-card';
+  favCard.innerHTML = `
+    <div class="lc-icon">⭐</div>
+    <div class="lc-name">Meus Favoritos</div>
+    <div class="lc-desc">Os jogos que mais me marcaram emocionalmente durante a Copa 2026.</div>
+    <div class="lc-count" id="lc-count-fav">${formatCount(countFav)}</div>`;
+  grid.appendChild(favCard);
 
-  // Card fixo de favoritos + cards de listas criadas + card de criar nova
-  let html = `
-    <div class="list-card">
-      <div class="lc-icon">⭐</div>
-      <div class="lc-name">Meus Favoritos</div>
-      <div class="lc-desc">Os jogos que mais me marcaram emocionalmente durante a Copa 2026.</div>
-      <div class="lc-count" id="lc-count-fav">${countFav} jogo${countFav !== 1 ? 's' : ''}</div>
-    </div>`;
-
+  // Cards das listas do usuário
   _listas.forEach(lista => {
-    html += `
-      <div class="list-card">
-        <div class="lc-icon">📋</div>
-        <div class="lc-name">${esc(lista.tituloLista)}</div>
-        <div class="lc-desc">${esc(lista.descricao)}</div>
-        <div class="lc-count">${lista.quantidadeJogos} jogo${lista.quantidadeJogos !== 1 ? 's' : ''}</div>
+    const card = document.createElement('div');
+    card.className = 'list-card';
+    card.dataset.id = lista.idLista;
+    card.innerHTML = `
+      <div class="lc-icon">📋</div>
+      <div class="lc-name">${esc(lista.tituloLista)}</div>
+      <div class="lc-desc">${esc(lista.descricao)}</div>
+      <div class="lc-count">${formatCount(lista.quantidadeJogos)}</div>
+      <div class="lc-btns">
+        <button class="lc-btn-ver">Ver / Editar</button>
+        <button class="lc-btn-del">Excluir</button>
       </div>`;
+    card.querySelector('.lc-btn-ver').addEventListener('click', e => {
+      e.stopPropagation();
+      abrirModalLista(lista.idLista, lista.tituloLista);
+    });
+    card.querySelector('.lc-btn-del').addEventListener('click', async e => {
+      e.stopPropagation();
+      if (!confirm(`Excluir a lista "${lista.tituloLista}"?`)) return;
+      const res = await apiFetch(`/api/listas/${lista.idLista}`, { method: 'DELETE' });
+      if (!res.ok) { alert('Erro ao excluir lista.'); return; }
+      _listas = _listas.filter(l => l.idLista !== lista.idLista);
+      renderListas();
+    });
+    grid.appendChild(card);
   });
 
-  html += `
-    <div class="list-card" onclick="criarNovaLista()"
-      style="border:2px dashed rgba(10,34,64,0.12);background:rgba(10,34,64,0.02);
-             display:flex;flex-direction:column;align-items:center;justify-content:center;
-             min-height:160px;cursor:pointer">
-      <div style="font-size:36px;margin-bottom:8px;opacity:0.3">+</div>
-      <div style="font-size:13px;color:var(--gray);font-weight:500">Criar nova lista</div>
-    </div>`;
+  // Card de criar nova lista
+  const addCard = document.createElement('div');
+  addCard.className = 'list-card';
+  addCard.style.cssText = 'border:2px dashed rgba(10,34,64,0.12);background:rgba(10,34,64,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;cursor:pointer';
+  addCard.innerHTML = `<div style="font-size:36px;margin-bottom:8px;opacity:0.3">+</div><div style="font-size:13px;color:var(--gray);font-weight:500">Criar nova lista</div>`;
+  addCard.addEventListener('click', abrirFormLista);
+  grid.appendChild(addCard);
 
-  grid.innerHTML = html;
-
-  // Vincula botões de criar nova lista no header também
-  document.querySelectorAll('.btn-create-list').forEach(btn => {
-    btn.onclick = criarNovaLista;
-  });
+  if (emptyEl) emptyEl.style.display = 'none';
 }
 
 /* ============================================================
