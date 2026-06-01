@@ -5,11 +5,9 @@ namespace DiarioCopaApi.DTOs;
 
 public class EditarExperienciaDto
 {
-    [Required(ErrorMessage = "A nota é obrigatória.")]
-    public Nota Nota { get; set; }
+    public Nota? Nota { get; set; }
 
-    [Required(ErrorMessage = "O sentimento é obrigatório.")]
-    public Sentimento Sentimento { get; set; }
+    public Sentimento? Sentimento { get; set; }
 
     [MaxLength(500, ErrorMessage = "O comentário não pode passar de 500 caracteres.")]
     public string? Comentario { get; set; }

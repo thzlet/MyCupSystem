@@ -198,6 +198,60 @@
 
   </div><!-- /app-shell -->
 
+  <!-- ===== MODAL EDITAR EXPERIÊNCIA ===== -->
+  <div id="modal-editar-exp" class="lista-modal" style="display:none">
+    <div class="lista-modal-box">
+      <div class="lm-head">
+        <span class="lm-title">Editar Experiência</span>
+        <button class="lm-close" onclick="fecharModalEditarExp()">✕</button>
+      </div>
+      <p id="edit-exp-titulo" style="font-size:13px;color:var(--gray);margin:0 0 16px;font-weight:600"></p>
+
+      <div class="form-grid" style="gap:14px">
+        <div class="fg full">
+          <label>Comentário</label>
+          <textarea id="edit-comentario" placeholder="Atualize seu comentário sobre o jogo..."></textarea>
+        </div>
+        <div class="fg">
+          <label>Nota</label>
+          <div class="star-picker" id="edit-spicker">
+            <button class="spick" onclick="setEditStars(1)">★</button>
+            <button class="spick" onclick="setEditStars(2)">★</button>
+            <button class="spick" onclick="setEditStars(3)">★</button>
+            <button class="spick" onclick="setEditStars(4)">★</button>
+            <button class="spick" onclick="setEditStars(5)">★</button>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Localização</label>
+          <input type="text" id="edit-localizacao" placeholder="Bar, casa, praça, estádio..." />
+        </div>
+        <div class="fg full">
+          <label>Sentimento</label>
+          <div class="sent-row">
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="FELIZ">🥳<span class="sl">Feliz</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="IRRITADO">😤<span class="sl">Irritado</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="ANSIOSO">😬<span class="sl">Ansioso</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="EMPOLGADO">🔥<span class="sl">Empolgado</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="ENJOADO">😴<span class="sl">Enjoado</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="NOSTALGICO">🥹<span class="sl">Nostálgico</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="ORGULHOSO">💪<span class="sl">Orgulhoso</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="TRISTE">😢<span class="sl">Triste</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="CONFIANTE">😎<span class="sl">Confiante</span></button>
+            <button class="sent-opt" onclick="selEditSent(this)" data-sent="ALIVIADO">😮‍💨<span class="sl">Aliviado</span></button>
+          </div>
+        </div>
+        <div class="fg full">
+          <p id="edit-erro" class="reg-erro" style="display:none"></p>
+          <div class="lfcard-btns">
+            <button class="btn-primary-sm" id="edit-btn-salvar" onclick="salvarEdicaoExp()">Salvar alterações</button>
+            <button class="btn-outline-sm" onclick="fecharModalEditarExp()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== MODAL DE LISTA ===== -->
   <div id="modal-lista" class="lista-modal" style="display:none">
     <div class="lista-modal-box">
