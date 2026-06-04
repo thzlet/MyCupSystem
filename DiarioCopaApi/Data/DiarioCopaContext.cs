@@ -26,5 +26,15 @@ public class DiarioCopaContext : DbContext
         .HasMany(l => l.Jogos)
         .WithMany()
         .UsingEntity(j => j.ToTable("ListaJogosJogos"));
+
+        modelBuilder.Entity<Experiencia>()
+            .HasOne(e => e.Usuario)
+            .WithMany(u => u.Experiencias)
+            .HasForeignKey(e => e.IdUsuario);
+
+        modelBuilder.Entity<Experiencia>()
+            .HasOne(e => e.Jogo)
+            .WithMany()
+            .HasForeignKey(e => e.IdJogo);
     }
 }
