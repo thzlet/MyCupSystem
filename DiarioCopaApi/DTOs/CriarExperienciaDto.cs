@@ -8,11 +8,9 @@ public class CriarExperienciaDto
     [Required(ErrorMessage = "O Jogo é obrigatório.")]
     public Guid IdJogo { get; set; }
 
-    [Required(ErrorMessage = "A nota é obrigatória.")]
-    public Nota Nota { get; set; }
+    public Nota? Nota { get; set; }
 
-    [Required(ErrorMessage = "O sentimento é obrigatório.")]
-    public Sentimento Sentimento { get; set; }
+    public Sentimento? Sentimento { get; set; }
 
     [MaxLength(500, ErrorMessage = "O comentário não pode passar de 500 caracteres.")]
     public string? Comentario { get; set; }
@@ -20,7 +18,6 @@ public class CriarExperienciaDto
     [MaxLength(200)]
     public string? Localizacao { get; set; }
 
-    // depois ver como funciona esse negocio da imagem
     public string? URL_Imagem { get; set; }
     public bool Assistido { get; set; }
     public bool Favorito { get; set; }

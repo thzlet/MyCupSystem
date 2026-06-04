@@ -397,3 +397,26 @@ a { text-decoration: none; color: inherit; }
 }
 .lm-btn-rem:hover { background: var(--red); color: white; }
 .lm-jogos-lista .feed-vazio { padding: 1.5rem; }
+/* ===== AÇÕES NOS CARDS (editar / excluir) ===== */
+.fc-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(10,34,64,0.07);
+}
+.fc-btn-edit {
+  background: var(--blue); color: white; border: none;
+  border-radius: var(--radius-xs); padding: 6px 14px;
+  font-size: 12px; font-weight: 600; font-family: var(--font-body);
+  cursor: pointer; transition: background var(--transition); flex: 1;
+}
+.fc-btn-edit:hover { background: var(--blue-md); }
+.fc-btn-del {
+  background: transparent; color: var(--red);
+  border: 1.5px solid var(--red); border-radius: var(--radius-xs);
+  padding: 6px 12px; font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.fc-btn-del:hover { background: var(--red); color: white; }

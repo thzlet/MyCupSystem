@@ -51,10 +51,10 @@ namespace DiarioCopaApi.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
-                    b.Property<int>("Nota")
+                    b.Property<int?>("Nota")
                         .HasColumnType("int");
 
-                    b.Property<int>("Sentimento")
+                    b.Property<int?>("Sentimento")
                         .HasColumnType("int");
 
                     b.Property<string>("URL_Imagem")
