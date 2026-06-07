@@ -5,6 +5,8 @@ using DiarioCopaApi.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace DiarioCopaApi.Controllers;
 
@@ -14,10 +16,12 @@ namespace DiarioCopaApi.Controllers;
 public class ExperienciasController : ControllerBase
 {
     private readonly DiarioCopaContext _context;
+    private readonly Cloudinary _cloudinary;
 
-    public ExperienciasController(DiarioCopaContext context)
+    public ExperienciasController(DiarioCopaContext context, Cloudinary cloudinary)
     {
         _context = context;
+        _cloudinary = cloudinary;
     }
 
     [HttpPost("criar-experiencia")]
@@ -133,5 +137,43 @@ public class ExperienciasController : ControllerBase
         _context.SaveChanges();
 
         return Ok(new { mensagem = "Experiência apagada com sucesso do seu diário." });
+    }
+
+    [HttpPost("{idExperiencia}/imagem")]
+    public async Task<IActionResult> UploadImagem(Guid idExperiencia, IFormFile imagem)
+    {
+        if (imagem == null || imagem.Length == 0)
+            return BadRequest(new { mensagem = "Nenhuma imagem foi enviada." });
+        
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var experiencia = _context.Experiencias
+            .FirstOrDefault(e => e.IdExperiencia == idExperiencia && e.IdUsuario == idUsuarioLogado);
+
+        if (experiencia == null)
+            return NotFound(new { mensagem = "Experiência não encontrada ou não pertence a você." });
+
+        var uploadResult = new ImageUploadResult();
+
+        using (var stream = imagem.OpenReadStream())
+        {
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(imagem.FileName, stream),
+                // Opcional: Define uma pasta dentro do seu Cloudinary para organizar
+                Folder = "diario-copa-experiencias", 
+                // Opcional: Corta e otimiza a imagem para não gastar muita internet do Front-end
+                Transformation = new Transformation().Height(800).Width(800).Crop("limit")
+            };
+            uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        }
+        if (uploadResult.Error != null)
+            return StatusCode(500, new { mensagem = "Erro ao enviar imagem para a nuvem.", detalhes = uploadResult.Error.Message });
+        
+        experiencia.URL_Imagem = uploadResult.SecureUrl.ToString();
+        _context.Experiencias.Update(experiencia);
+        _context.SaveChanges();
+
+        return Ok(new { mensagem = "Imagem salva com sucesso!", url = experiencia.URL_Imagem });
     }
 }

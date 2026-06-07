@@ -4,7 +4,7 @@ using DiarioCopaApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
+using CloudinaryDotNet;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +16,15 @@ builder.Services.AddDbContext<DiarioCopaContext>(options =>
 
 
 builder.Services.AddScoped<TokenService>();
+
+var account = new Account(
+    builder.Configuration["CloudinarySettings:CloudName"],
+    builder.Configuration["CloudinarySettings:ApiKey"],
+    builder.Configuration["CloudinarySettings:ApiSecret"]
+);
+
+var cloudinary = new Cloudinary(account);
+builder.Services.AddSingleton(cloudinary);
 
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
 
