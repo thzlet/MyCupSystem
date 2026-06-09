@@ -61,8 +61,8 @@ Para mais informações, acesse a documentação em docs/DocumentacaoMyCupSystem
 - [x] Implementação do módulo de autenticação (RF01–RF04)
 - [x] Implementação das funcionalidades de experiência (RF05–RF11)
 - [x] Implementação das funcionalidades de consulta (RF12–RF14)
-- [ ] Testes e validação
-- [ ] Deploy
+- [x] Testes e validação
+- [x] Deploy
 
 ---
 
