@@ -2,7 +2,7 @@
    js/home.js — Diário Digital Copa 2026
 
    Depende de:
-     js/api.js   → apiFetch(endpoint, options)
+     js/api.js   → apiFetch(endpoint, options), apiUploadImagem(id, file)
      js/auth.js  → leitura do token
 
    Endpoints:
@@ -11,6 +11,7 @@
      POST   /api/experiencias/criar-experiencia
      PUT    /api/experiencias/{id}
      DELETE /api/experiencias/{id}
+     POST   /api/experiencias/{id}/imagem        ← Cloudinary
      GET    /api/jogos
      GET    /api/favoritos
      POST   /api/favoritos/{idJogo}
@@ -35,6 +36,9 @@ let _editId           = null;
 let _editStarSelected = 0;
 let _editSentSelected = '';
 
+// upload de imagem
+let _uploadExpId      = null;   // id da experiência que receberá a imagem
+
 /* ============================================================
    INICIALIZAÇÃO
    ============================================================ */
@@ -47,6 +51,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   await carregarExperiencias();
   await carregarFavoritos();
   await carregarListas();
+
+  // Input de arquivo oculto — dispara ao clicar no botão 📸
+  const inputImagem = document.getElementById('input-imagem-experiencia');
+  if (inputImagem) {
+    inputImagem.addEventListener('change', handleImagemSelecionada);
+  }
 
   const params = new URLSearchParams(window.location.search);
   const screenParam = params.get('screen');
@@ -362,21 +372,7 @@ function renderFeed() {
 
   lista.innerHTML = recentes.map(exp => cardFeedHTML(exp)).join('');
 
-  // eventos dos botões de ação
-  lista.querySelectorAll('.fc-btn-edit').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      const exp = _experiencias.find(x => x.idExperiencia === id);
-      if (exp) abrirModalEditarExp(exp);
-    });
-  });
-  lista.querySelectorAll('.fc-btn-del').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      excluirExperiencia(btn.dataset.id);
-    });
-  });
+  bindCardEvents(lista);
 }
 
 function cardFeedHTML(exp) {
@@ -387,8 +383,16 @@ function cardFeedHTML(exp) {
     ? `<span class="fc-loc"><span class="loc-dot"></span>${esc(exp.localizacao)}</span>`
     : '';
 
+  // imagem da experiência (se existir)
+  const imgHTML = exp.urlImagem
+    ? `<div class="experiencia-imagem-container">
+         <img src="${esc(exp.urlImagem)}" alt="Imagem da experiência" class="experiencia-imagem"
+              onerror="this.parentElement.style.display='none'" />
+       </div>`
+    : '';
+
   return `
-    <div class="feed-card">
+    <div class="feed-card" data-experiencia-id="${esc(exp.idExperiencia)}">
       <div class="fc-top">
         <div class="fc-match">
           ${esc(exp.jogoTitulo || '—')}
@@ -397,6 +401,7 @@ function cardFeedHTML(exp) {
         <div class="fc-emoji">${sentEmoji}</div>
       </div>
       <div class="fc-text">${esc(exp.comentario || '')}</div>
+      ${imgHTML}
       <div class="fc-bottom">
         <div class="stars-row">${stars}</div>
         ${loc}
@@ -404,6 +409,7 @@ function cardFeedHTML(exp) {
       </div>
       <div class="fc-actions">
         <button class="fc-btn-edit" data-id="${esc(exp.idExperiencia)}">✏️ Editar</button>
+        <button class="fc-btn-img"  data-id="${esc(exp.idExperiencia)}">📸 ${exp.urlImagem ? 'Trocar imagem' : 'Adicionar imagem'}</button>
         <button class="fc-btn-del"  data-id="${esc(exp.idExperiencia)}">🗑️ Excluir</button>
       </div>
     </div>`;
@@ -433,8 +439,15 @@ function renderTimeline(filtro) {
     if (exp.assistido)  tags.push(`<span class="tl-tag">✅ Assistido</span>`);
     if (exp.favorito)   tags.push(`<span class="tl-tag">⭐ Favorito</span>`);
 
+    const imgHTML = exp.urlImagem
+      ? `<div class="experiencia-imagem-container">
+           <img src="${esc(exp.urlImagem)}" alt="Imagem da experiência" class="experiencia-imagem"
+                onerror="this.parentElement.style.display='none'" />
+         </div>`
+      : '';
+
     return `
-      <div class="tl-item">
+      <div class="tl-item" data-experiencia-id="${esc(exp.idExperiencia)}">
         <div class="tl-dot"></div>
         <div class="tl-card">
           <div class="tlc-head">
@@ -442,26 +455,39 @@ function renderTimeline(filtro) {
             <span class="tlc-date">${formatarData(exp.dataRegistro)}</span>
           </div>
           <div class="tlc-body">${esc(exp.comentario || '')}</div>
+          ${imgHTML}
           <div class="tlc-tags">${tags.join('')}</div>
           <div class="fc-actions" style="margin-top:10px">
             <button class="fc-btn-edit" data-id="${esc(exp.idExperiencia)}">✏️ Editar</button>
+            <button class="fc-btn-img"  data-id="${esc(exp.idExperiencia)}">📸 ${exp.urlImagem ? 'Trocar imagem' : 'Adicionar imagem'}</button>
             <button class="fc-btn-del"  data-id="${esc(exp.idExperiencia)}">🗑️ Excluir</button>
           </div>
         </div>
       </div>`;
   }).join('');
 
-  lista.querySelectorAll('.fc-btn-edit').forEach(btn => {
+  bindCardEvents(lista);
+}
+
+// Centraliza o bind de eventos nos cards (feed + timeline)
+function bindCardEvents(container) {
+  container.querySelectorAll('.fc-btn-edit').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const exp = _experiencias.find(x => x.idExperiencia === btn.dataset.id);
       if (exp) abrirModalEditarExp(exp);
     });
   });
-  lista.querySelectorAll('.fc-btn-del').forEach(btn => {
+  container.querySelectorAll('.fc-btn-del').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       excluirExperiencia(btn.dataset.id);
+    });
+  });
+  container.querySelectorAll('.fc-btn-img').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      abrirUploadImagem(btn.dataset.id);
     });
   });
 }
@@ -793,6 +819,133 @@ async function excluirExperiencia(id) {
   } catch (err) {
     alert('Erro de conexão.');
   }
+}
+
+/* ============================================================
+   UPLOAD DE IMAGEM (RF09)
+   ============================================================ */
+
+/**
+ * Abre o seletor de arquivo para a experiência com o id informado.
+ * @param {string} experienciaId
+ */
+function abrirUploadImagem(experienciaId) {
+  _uploadExpId = experienciaId;
+  const input = document.getElementById('input-imagem-experiencia');
+  if (!input) return;
+  input.value = '';   // limpa seleção anterior para permitir re-upload do mesmo arquivo
+  input.click();
+}
+
+/**
+ * Callback chamado quando o usuário seleciona um arquivo no input oculto.
+ */
+async function handleImagemSelecionada(e) {
+  const arquivo = e.target.files[0];
+  if (!arquivo || !_uploadExpId) return;
+
+  // Validações de tipo e tamanho
+  if (!arquivo.type.startsWith('image/')) {
+    mostrarToast('❌ Selecione apenas arquivos de imagem.', 'erro');
+    _uploadExpId = null;
+    return;
+  }
+  if (arquivo.size > 5 * 1024 * 1024) {
+    mostrarToast('❌ A imagem precisa ter menos de 5 MB.', 'erro');
+    _uploadExpId = null;
+    return;
+  }
+
+  // Encontra o botão de imagem do card para dar feedback visual
+  const btnImg = document.querySelector(`[data-experiencia-id="${_uploadExpId}"] .fc-btn-img`);
+  const textoOriginal = btnImg ? btnImg.innerHTML : '';
+
+  try {
+    if (btnImg) { btnImg.innerHTML = '⏳ Enviando...'; btnImg.disabled = true; }
+
+    const res = await apiUploadImagem(_uploadExpId, arquivo);
+
+    if (!res.ok) {
+      const msg = res.data?.mensagem || res.data?.message || 'Erro ao fazer upload.';
+      mostrarToast(`❌ ${msg}`, 'erro');
+      return;
+    }
+
+    // Pega a URL retornada pelo backend (tenta vários campos possíveis)
+    const urlImagem = res.data?.urlImagem || res.data?.imageUrl || res.data?.url || res.data?.imagem;
+
+    if (urlImagem) {
+      // Atualiza a experiência no estado local para refletir sem recarregar tudo
+      const exp = _experiencias.find(x => x.idExperiencia === _uploadExpId);
+      if (exp) exp.urlImagem = urlImagem;
+
+      // Atualiza o card visualmente sem re-renderizar tudo
+      atualizarImagemNoCard(_uploadExpId, urlImagem);
+
+      // Atualiza o texto do botão
+      if (btnImg) btnImg.innerHTML = '📸 Trocar imagem';
+    } else {
+      // Fallback: recarrega as experiências do backend
+      await carregarExperiencias();
+    }
+
+    mostrarToast('📸 Imagem adicionada com sucesso!', 'sucesso');
+
+  } catch (err) {
+    console.error('Erro no upload:', err);
+    mostrarToast('❌ Erro de conexão. Tente novamente.', 'erro');
+  } finally {
+    if (btnImg) { btnImg.disabled = false; if (!btnImg.innerHTML.includes('Trocar')) btnImg.innerHTML = textoOriginal; }
+    _uploadExpId = null;
+  }
+}
+
+/**
+ * Insere ou substitui a imagem no card de experiência sem re-renderizar tudo.
+ * @param {string} experienciaId
+ * @param {string} urlImagem
+ */
+function atualizarImagemNoCard(experienciaId, urlImagem) {
+  // Atualiza em todos os cards com aquele id (feed + timeline)
+  document.querySelectorAll(`[data-experiencia-id="${experienciaId}"]`).forEach(card => {
+    let container = card.querySelector('.experiencia-imagem-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'experiencia-imagem-container';
+      // Insere antes do fc-bottom ou fc-actions, o que vier primeiro
+      const ref = card.querySelector('.fc-bottom') || card.querySelector('.fc-actions') || card.querySelector('.tlc-tags');
+      if (ref) ref.before(container);
+      else card.appendChild(container);
+    }
+    container.innerHTML = `
+      <img src="${urlImagem}" alt="Imagem da experiência" class="experiencia-imagem"
+           onerror="this.parentElement.style.display='none'" />`;
+  });
+}
+
+/**
+ * Exibe uma notificação toast na tela.
+ * @param {string} mensagem
+ * @param {'sucesso'|'erro'} tipo
+ */
+function mostrarToast(mensagem, tipo = 'sucesso') {
+  // Remove toast anterior se existir
+  document.getElementById('app-toast')?.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'app-toast';
+  toast.className = `app-toast app-toast--${tipo}`;
+  toast.textContent = mensagem;
+  document.body.appendChild(toast);
+
+  // Força reflow para a animação funcionar
+  toast.getBoundingClientRect();
+  toast.classList.add('app-toast--visible');
+
+  setTimeout(() => {
+    toast.classList.remove('app-toast--visible');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
 }
 
 /* ============================================================
