@@ -38,6 +38,7 @@ let _editSentSelected = '';
 
 // upload de imagem
 let _uploadExpId      = null;   // id da experiência que receberá a imagem
+let _regImagemFile    = null;   // arquivo de imagem selecionado no formulário de registro
 
 /* ============================================================
    INICIALIZAÇÃO
@@ -347,6 +348,13 @@ function showScreen(id) {
     if (t.getAttribute('onclick')?.includes(`'${id}'`)) t.classList.add('active');
   });
   if (id === 'registrar') resetarFormulario();
+  setMobileNav(id);
+}
+
+function setMobileNav(id) {
+  document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+  const active = document.getElementById(`mnav-${id}`);
+  if (active) active.classList.add('active');
 }
 
 /* ============================================================
@@ -600,6 +608,42 @@ function selSent(el) {
 }
 
 /* ============================================================
+   REGISTRAR — PRÉ-VISUALIZAÇÃO DE IMAGEM
+   ============================================================ */
+function previewRegImagem(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    mostrarToast('❌ Selecione apenas arquivos de imagem.', 'erro');
+    input.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    mostrarToast('❌ A imagem precisa ter menos de 5 MB.', 'erro');
+    input.value = '';
+    return;
+  }
+
+  _regImagemFile = file;
+
+  const preview = document.getElementById('reg-img-preview');
+  const txt     = document.getElementById('reg-img-txt');
+  const area    = document.getElementById('reg-img-area');
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (preview) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    }
+    if (txt)  txt.style.display = 'none';
+    if (area) area.classList.add('has-image');
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ============================================================
    REGISTRAR — SALVAR (campos opcionais)
    ============================================================ */
 async function salvarExperiencia() {
@@ -650,6 +694,16 @@ async function salvarExperiencia() {
       const msg = res.data?.mensagem || res.data?.message || 'Erro ao salvar experiência.';
       mostrarErro(msg);
       return;
+    }
+
+    // Se o usuário selecionou uma imagem, faz o upload agora
+    if (_regImagemFile && res.data?.idExperiencia) {
+      try {
+        await apiUploadImagem(res.data.idExperiencia, _regImagemFile);
+      } catch (err) {
+        console.warn('Erro no upload da imagem:', err);
+        // Não bloqueia o fluxo — a experiência já foi salva
+      }
     }
 
     await carregarExperiencias();
@@ -705,6 +759,17 @@ function resetarFormulario() {
 
   const erroEl = document.getElementById('reg-erro');
   if (erroEl) { erroEl.style.display = 'none'; erroEl.textContent = ''; }
+
+  // reset do campo de imagem
+  _regImagemFile = null;
+  const regImgInput = document.getElementById('reg-input-imagem');
+  if (regImgInput) regImgInput.value = '';
+  const regImgPreview = document.getElementById('reg-img-preview');
+  if (regImgPreview) { regImgPreview.src = ''; regImgPreview.style.display = 'none'; }
+  const regImgTxt = document.getElementById('reg-img-txt');
+  if (regImgTxt) regImgTxt.style.display = '';
+  const regImgArea = document.getElementById('reg-img-area');
+  if (regImgArea) regImgArea.classList.remove('has-image');
 }
 
 /* ============================================================

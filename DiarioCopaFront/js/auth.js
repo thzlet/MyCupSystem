@@ -192,18 +192,33 @@ async function handleRegister(event) {
 }
 
 /* ============================================================
-   LINK "ESQUECI MINHA SENHA" (placeholder)
+   LINK "ESQUECI MINHA SENHA"
    ============================================================ */
 function handleForgotPassword(event) {
   event.preventDefault();
-  const email = document.getElementById('login-email')?.value.trim();
 
-  if (!email || !validateEmail(email)) {
-    showError('login', 'Informe seu e-mail antes de solicitar a redefinição.');
-    document.getElementById('login-email')?.focus();
-    return;
-  }
+  // Remove tooltip anterior se existir
+  document.getElementById('forgot-tooltip')?.remove();
 
-  // TODO: chamar endpoint /api/auth/forgot-password
-  showSuccess('login', `Link de redefinição enviado para ${email}. Verifique sua caixa de entrada.`);
+  const link = event.currentTarget;
+  const tooltip = document.createElement('div');
+  tooltip.id = 'forgot-tooltip';
+  tooltip.className = 'forgot-tooltip';
+  tooltip.innerHTML = `
+    <div class="forgot-tooltip-arrow"></div>
+    <p>Envie uma mensagem para <a href="mailto:mycupsuporte@gmail.com">mycupsuporte@gmail.com</a> com seu usuário e email para que sua senha seja redefinida.</p>
+  `;
+
+  // Insere o tooltip logo após o link
+  link.parentElement.appendChild(tooltip);
+
+  // Remove ao clicar fora
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!tooltip.contains(e.target) && e.target !== link) {
+        tooltip.remove();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 100);
 }
