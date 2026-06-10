@@ -177,9 +177,37 @@
 
         <p class="auth-terms">
           Ao criar uma conta, você concorda com os
-          <a href="#">Termos de Uso</a> e a
-          <a href="#">Política de Privacidade</a>.
+          <a href="#" onclick="mostrarInfo('termos'); return false;">Termos de Uso</a>
+          e a
+          <a href="#" onclick="mostrarInfo('privacidade'); return false;">Política de Privacidade</a>.
         </p>
+        <div id="info-box" class="info-box"></div>
+
+        <script>
+        function mostrarInfo(tipo) {
+          const box = document.getElementById("info-box");
+
+          if (tipo === "termos") {
+            box.innerHTML = `
+              <h3>Termos de Uso</h3>
+              <p>
+                Este sistema é destinado ao gerenciamento da Copa 2026.
+                O usuário concorda em utilizar a plataforma de forma adequada.
+              </p>
+           `;
+         }
+
+          if (tipo === "privacidade") {
+            box.innerHTML = `
+              <h3>Política de Privacidade</h3>
+              <p>
+                Os dados cadastrados são utilizados apenas para autenticação
+                e funcionamento do sistema.
+              </p>
+            `;
+          }
+}
+</script>
 
         <p class="auth-switch">
           Já tem conta?
