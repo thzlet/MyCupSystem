@@ -109,6 +109,7 @@ async function carregarJogos() {
  * Também garante que a URL use HTTPS (evita bloqueio em mobile).
  */
 function normalizarUrlImagem(e) {
+  // Tenta todas as variações de campo que a API pode retornar
   const url =
     e.urlImagem   ||
     e.url_Imagem  ||
@@ -118,8 +119,11 @@ function normalizarUrlImagem(e) {
     e.imageUrl    ||
     e.image_url   ||
     e.imagem      ||
+    e.imagemUrl   ||
+    e.foto        ||
+    e.fotoUrl     ||
     null;
-  if (!url || url.trim() === '') return null;
+  if (!url || typeof url !== 'string' || url.trim() === '') return null;
   // Força HTTPS — navegadores mobile bloqueiam imagens HTTP em páginas HTTPS
   return url.trim().replace(/^http:\/\//i, 'https://');
 }
@@ -506,7 +510,9 @@ function bindCardEvents(container) {
   container.querySelectorAll('.fc-btn-edit').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      const exp = _experiencias.find(x => x.idExperiencia === btn.dataset.id);
+      // btn.dataset.id é string; idExperiencia pode ser number → usa ==
+      // eslint-disable-next-line eqeqeq
+      const exp = _experiencias.find(x => x.idExperiencia == btn.dataset.id);
       if (exp) abrirModalEditarExp(exp);
     });
   });
@@ -713,10 +719,29 @@ async function salvarExperiencia() {
       return;
     }
 
-    // Se o usuário selecionou uma imagem, faz o upload agora
+    // Se o usuário selecionou uma imagem, faz o upload ANTES de recarregar o feed
     if (_regImagemFile && res.data?.idExperiencia) {
       try {
-        await apiUploadImagem(res.data.idExperiencia, _regImagemFile);
+        const uploadRes = await apiUploadImagem(res.data.idExperiencia, _regImagemFile);
+        // Se o upload retornou a URL, pré-injeta no objeto local para o render mostrar imediatamente
+        if (uploadRes.ok) {
+          const urlBruta =
+            uploadRes.data?.urlImagem  ||
+            uploadRes.data?.url_Imagem ||
+            uploadRes.data?.uRL_Imagem ||
+            uploadRes.data?.UrlImagem  ||
+            uploadRes.data?.URL_Imagem ||
+            uploadRes.data?.imageUrl   ||
+            uploadRes.data?.image_url  ||
+            uploadRes.data?.url        ||
+            uploadRes.data?.imagem     ||
+            null;
+          if (urlBruta) {
+            // Guarda no state para que o render exiba a imagem imediatamente
+            const novaExp = res.data;
+            if (!novaExp._urlImagemPendente) novaExp._urlImagemPendente = urlBruta.trim().replace(/^http:\/\//i, 'https://');
+          }
+        }
       } catch (err) {
         console.warn('Erro no upload da imagem:', err);
       }
@@ -938,6 +963,7 @@ async function handleImagemSelecionada(e) {
   }
 
   // Encontra o botão de imagem do card para dar feedback visual
+  // dataset.id é sempre string; idExperiencia pode ser number → usa == para coerção de tipo
   const btnImg = document.querySelector(`[data-experiencia-id="${_uploadExpId}"] .fc-btn-img`);
   const textoOriginal = btnImg ? btnImg.innerHTML : '';
 
@@ -969,7 +995,9 @@ async function handleImagemSelecionada(e) {
 
     if (urlImagem) {
       // Atualiza a experiência no estado local para refletir sem recarregar tudo
-      const exp = _experiencias.find(x => x.idExperiencia === _uploadExpId);
+      // Usa == para coerção de tipo (dataset.id é string; idExperiencia pode ser number)
+      // eslint-disable-next-line eqeqeq
+      const exp = _experiencias.find(x => x.idExperiencia == _uploadExpId);
       if (exp) exp.urlImagem = urlImagem;
 
       // Atualiza o card visualmente sem re-renderizar tudo
@@ -1000,6 +1028,7 @@ async function handleImagemSelecionada(e) {
  */
 function atualizarImagemNoCard(experienciaId, urlImagem) {
   // Atualiza em todos os cards com aquele id (feed + timeline)
+  // Usa == para coerção: experienciaId vem do dataset (string), mas o atributo HTML pode ser number
   document.querySelectorAll(`[data-experiencia-id="${experienciaId}"]`).forEach(card => {
     let container = card.querySelector('.experiencia-imagem-container');
     if (!container) {

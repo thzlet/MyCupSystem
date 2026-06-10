@@ -238,14 +238,14 @@
 
   <!-- ===== MODAL EDITAR EXPERIÊNCIA ===== -->
   <div id="modal-editar-exp" class="lista-modal" style="display:none">
-    <div class="lista-modal-box">
+    <div class="lista-modal-box" style="touch-action: pan-y;">
       <div class="lm-head">
         <span class="lm-title">Editar Experiência</span>
         <button class="lm-close" onclick="fecharModalEditarExp()">✕</button>
       </div>
-      <p id="edit-exp-titulo" style="font-size:13px;color:var(--gray);margin:0 0 16px;font-weight:600"></p>
+      <p id="edit-exp-titulo" style="font-size:13px;color:var(--gray);margin:16px 0;font-weight:600;padding:0 2px"></p>
 
-      <div class="form-grid" style="gap:14px">
+      <div class="form-grid" style="gap:14px;padding:0 2px 8px">
         <div class="fg full">
           <label>Comentário</label>
           <textarea id="edit-comentario" placeholder="Atualize seu comentário sobre o jogo..."></textarea>

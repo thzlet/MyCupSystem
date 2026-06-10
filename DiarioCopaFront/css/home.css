@@ -350,6 +350,56 @@ a { text-decoration: none; color: inherit; }
   .fg.full          { grid-column: 1; }
   .home-title       { font-size: 36px; }
   .lfcard-row       { flex-direction: column; }
+
+  /* ===== MODAL MOBILE ===== */
+  .lista-modal {
+    /* Em mobile alinha o modal na base para não conflitar com o teclado */
+    align-items: flex-end;
+    padding-bottom: 0;
+  }
+  .lista-modal-box {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 0 16px 24px;
+    /* garante que o modal não fica atrás da bottom bar */
+    padding-bottom: env(safe-area-inset-bottom, 24px);
+  }
+  .lm-head {
+    padding: 16px 18px;
+    position: sticky; top: 0;
+    background: white;
+    z-index: 10;
+    border-bottom: 1px solid rgba(10,34,64,0.08);
+  }
+  .lm-add-row {
+    padding: 14px 0 0;
+    flex-direction: column;
+  }
+  .lm-add-row select { width: 100%; }
+  .lm-jogos-lista { padding: 10px 0 16px; }
+
+  /* Modal de editar experiência no mobile */
+  #modal-editar-exp .lista-modal-box .form-grid {
+    grid-template-columns: 1fr;
+  }
+  #modal-editar-exp .lista-modal-box .fg.full {
+    grid-column: 1;
+  }
+  /* Sentimentos: scroll horizontal no mobile para não empilhar demais */
+  #modal-editar-exp .sent-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    gap: 6px;
+  }
+  #modal-editar-exp .sent-opt {
+    flex: 0 0 60px;
+    min-width: 60px;
+    padding: 10px 4px;
+    font-size: 20px;
+  }
 }
 
 /* ========== LISTA FORM CARD ========== */
@@ -404,14 +454,21 @@ a { text-decoration: none; color: inherit; }
   background: rgba(10,34,64,0.5);
   display: flex; align-items: center; justify-content: center;
   z-index: 200; backdrop-filter: blur(2px);
+  /* garante que o overlay não bloqueia o scroll no iOS */
+  -webkit-overflow-scrolling: touch;
 }
 .lista-modal-box {
   background: white; border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  width: min(1000px, 95vw); max-height: 85vh;
+  width: min(1000px, 95vw); max-height: 90vh;
   padding: 0 32px 24px;
-  display: flex; flex-direction: column; overflow: hidden;
+  display: flex; flex-direction: column;
+  /* overflow-y: auto permite scroll dentro do modal em mobile */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: fadeIn 0.2s ease;
+  /* Evita que o modal fique escondido atrás do teclado no iOS */
+  overscroll-behavior: contain;
 }
 .lm-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -436,7 +493,11 @@ a { text-decoration: none; color: inherit; }
 .lm-add-row select:focus { border-color: var(--blue); }
 .lm-jogos-lista {
   display: flex; flex-direction: column; gap: 8px;
-  padding: 14px 26px 22px; overflow-y: auto;
+  padding: 14px 26px 22px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* No mobile o container do modal já faz scroll; sem max-height aqui */
+  max-height: none;
 }
 .lm-jogo-item {
   display: flex; align-items: center; justify-content: space-between;
