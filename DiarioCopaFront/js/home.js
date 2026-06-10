@@ -102,6 +102,25 @@ async function carregarJogos() {
 /* ============================================================
    EXPERIÊNCIAS
    ============================================================ */
+
+/**
+ * Normaliza o campo de URL de imagem de uma experiência,
+ * tratando as diferentes variações de nomenclatura que a API pode retornar.
+ */
+function normalizarUrlImagem(e) {
+  const url =
+    e.urlImagem   ||
+    e.url_Imagem  ||
+    e.uRL_Imagem  ||
+    e.UrlImagem   ||
+    e.URL_Imagem  ||
+    e.imageUrl    ||
+    e.image_url   ||
+    e.imagem      ||
+    null;
+  return url && url.trim() !== '' ? url.trim() : null;
+}
+
 async function carregarExperiencias() {
   try {
     const res = await apiFetch('/api/experiencias/listar-experiencias');
@@ -111,8 +130,8 @@ async function carregarExperiencias() {
       return;
     }
     _experiencias = (res.ok && Array.isArray(res.data))
-    ? res.data.map(e => ({ ...e, urlImagem: e.urlImagem || e.url_Imagem || e.uRL_Imagem || null }))
-    : [];
+      ? res.data.map(e => ({ ...e, urlImagem: normalizarUrlImagem(e) }))
+      : [];
   } catch (err) {
     console.warn('Erro ao buscar experiências:', err);
     _experiencias = [];
@@ -130,9 +149,9 @@ function atualizarStats() {
     : '—';
   const favs        = _experiencias.filter(e => e.favorito).length;
 
-  const elJogos   = document.getElementById('stat-jogos');
-  const elNota    = document.getElementById('stat-nota');
-  const elFav     = document.getElementById('stat-fav');
+  const elJogos    = document.getElementById('stat-jogos');
+  const elNota     = document.getElementById('stat-nota');
+  const elFav      = document.getElementById('stat-fav');
   const elEntradas = document.getElementById('stat-entradas');
 
   if (elJogos)    elJogos.textContent    = jogosVistos;
@@ -931,7 +950,17 @@ async function handleImagemSelecionada(e) {
     }
 
     // Pega a URL retornada pelo backend (tenta vários campos possíveis)
-    const urlImagem = res.data?.urlImagem || res.data?.imageUrl || res.data?.url || res.data?.imagem;
+    const urlImagem =
+      res.data?.urlImagem  ||
+      res.data?.url_Imagem ||
+      res.data?.uRL_Imagem ||
+      res.data?.UrlImagem  ||
+      res.data?.URL_Imagem ||
+      res.data?.imageUrl   ||
+      res.data?.image_url  ||
+      res.data?.url        ||
+      res.data?.imagem     ||
+      null;
 
     if (urlImagem) {
       // Atualiza a experiência no estado local para refletir sem recarregar tudo
