@@ -240,19 +240,63 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="container">
-    <div class="footer-inner">
-      <div class="footer-logo">⚽ DIÁRIO DIGITAL · COPA 2026</div>
-      <div class="footer-links">
-        <a class="footer-link">Sobre</a>
-        <a class="footer-link">Privacidade</a>
-        <a class="footer-link">Termos</a>
-        <a class="footer-link">Contato</a>
-      </div>
-      <div class="footer-copy">© 2026 IFCE Campus Aracati · Ciência da Computação</div>
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-logo">🌎 DIÁRIO DIGITAL · COPA 2026</div>
+
+            <div class="footer-links">
+                <a class="footer-link" onclick="mostrarSecao('sobre')">Sobre</a>
+                <a class="footer-link" onclick="mostrarSecao('privacidade')">Privacidade</a>
+                <a class="footer-link" onclick="mostrarSecao('termos')">Termos</a>
+                <a class="footer-link" onclick="mostrarSecao('contato')">Contato</a>
+            </div>
+
+            <!-- texto aparece aqui -->
+            <div id="footer-content" class="footer-content"></div>
+
+            <div class="footer-copy">
+                © 2026 IFCE Campus Aracati · Ciência da Computação
+            </div>
+        </div>
     </div>
-  </div>
 </footer>
+
+<script>
+function mostrarSecao(secao) {
+    const content = document.getElementById("footer-content");
+
+    const textos = {
+        sobre: `
+            <h3>Sobre</h3>
+            <p>
+                O Diário Digital é um portal desenvolvido para cobertura da Copa do Mundo de 2026,
+                produzido por estudantes do IFCE Campus Aracati.
+            </p>
+        `,
+        privacidade: `
+            <h3>Política de Privacidade</h3>
+            <p>
+                Nenhuma informação pessoal é compartilhada com terceiros sem consentimento.
+            </p>
+        `,
+        termos: `
+            <h3>Termos de Uso</h3>
+            <p>
+                O conteúdo disponibilizado possui caráter informativo e educacional.
+            </p>
+        `,
+        contato: `
+            <h3>Contato</h3>
+            <p>
+                Email: contato@diariodigital.com<br>
+                IFCE Campus Aracati
+            </p>
+        `
+    };
+
+    content.innerHTML = textos[secao];
+}
+</script>
 
 </body>
 </html>
