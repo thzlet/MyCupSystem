@@ -2,14 +2,14 @@
 
 <img src="https://img.shields.io/badge/Copa%20do%20Mundo-2026-006847?style=for-the-badge&logo=fifa&logoColor=white" />
 <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-red?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Versão-1.1.0-blue?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Versão-1.2.0-blue?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Licença-MIT-green?style=for-the-badge" />
 
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&color=FFFFFF&center=true&vCenter=true&width=435&lines=Sua+Experiência!⚽;Sua+Copa!🏆;Seu+Diário!📸;)](https://git.io/typing-svg)
 
-**Aplicação web para registro de experiências pessoais durante a Copa do Mundo 2026**
+**Aplicação web para registro de experiências pessoais durante a Copa do Mundo 2026! 🏆**
 
-📋 Documentação • 🚀 Funcionalidades • 🛠️ Tecnologias • ▶️ Como Rodar • 👥 Equipe
+https://my-cup-system.vercel.app/index.html
 
 </div>
 
@@ -32,7 +32,7 @@ Cada jogo tem uma história e essa história merece ser contada por quem a viveu
 | Diagramas UML | Casos de uso, classes, sequência, estados e atividades | ✅ Concluído |
 | Protótipos | Wireframes e mockups das telas | ✅ Concluído |
 
-Para mais informações, acesse a documentação em docs/DocumentacaoMyCupSystem.pdf
+**Para mais informações, acesse a documentação em docs/DocumentacaoMyCupSystem.pdf**
 
 ---
 
@@ -40,11 +40,11 @@ Para mais informações, acesse a documentação em docs/DocumentacaoMyCupSystem
 
 <table>
   <tr>
-    <td align="center"><b>Ana Carla Vidal</b></td>
-    <td align="center"><b>Gabriel Dourado</b></td>
-    <td align="center"><b>José Guilherme</b></td>
     <td align="center"><b>Iarley Freitas</b></td>
+    <td align="center"><b>Gabriel Dourado</b></td>
     <td align="center"><b>Letícia Sousa</b></td>
+    <td align="center"><b>José G. Carvalho</b></td
+    <td align="center"><b>Ana C. Vidal</b></td>
   </tr>
 </table>
 
