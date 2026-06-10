@@ -452,3 +452,44 @@ a { text-decoration: none; color: inherit; }
     border-radius: 16px;
   }
 }
+
+/* ========== TOOLTIP "ESQUECI MINHA SENHA" ========== */
+.auth-forgot {
+  position: relative;
+}
+.forgot-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--blue);
+  color: white;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  width: min(320px, 90vw);
+  box-shadow: 0 8px 32px rgba(10,34,64,0.25);
+  z-index: 50;
+  animation: fadeInTooltip 0.18s ease;
+}
+.forgot-tooltip a {
+  color: var(--gold);
+  text-decoration: underline;
+  word-break: break-all;
+}
+.forgot-tooltip-arrow {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid var(--blue);
+}
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

@@ -148,6 +148,15 @@
             </div>
           </div>
           <div class="fg full">
+            <label>Imagem (opcional)</label>
+            <div class="img-upload-area" id="reg-img-area" onclick="document.getElementById('reg-input-imagem').click()">
+              <span class="img-upload-icon">📷</span>
+              <span class="img-upload-txt" id="reg-img-txt">Clique para adicionar uma foto</span>
+              <img id="reg-img-preview" class="img-upload-preview" style="display:none" alt="Prévia da imagem" />
+            </div>
+            <input type="file" id="reg-input-imagem" accept="image/*" style="display:none" onchange="previewRegImagem(this)" />
+          </div>
+          <div class="fg full">
             <div id="reg-erro" class="reg-erro" style="display:none"></div>
             <button class="btn-primary-full" onclick="salvarExperiencia()">Publicar no meu diário →</button>
           </div>
@@ -206,6 +215,26 @@
     </div>
 
   </div><!-- /app-shell -->
+
+  <!-- ===== NAVBAR MOBILE (bottom) ===== -->
+  <nav class="mobile-nav" id="mobile-nav">
+    <button class="mobile-nav-item active" id="mnav-home" onclick="showScreen('home'); setMobileNav('home')">
+      <span class="mnav-icon">🏠</span>
+      <span class="mnav-label">Início</span>
+    </button>
+    <button class="mobile-nav-item" id="mnav-registrar" onclick="showScreen('registrar'); setMobileNav('registrar')">
+      <span class="mnav-icon">✏️</span>
+      <span class="mnav-label">Registrar</span>
+    </button>
+    <button class="mobile-nav-item" id="mnav-timeline" onclick="showScreen('timeline'); setMobileNav('timeline')">
+      <span class="mnav-icon">🗓️</span>
+      <span class="mnav-label">Timeline</span>
+    </button>
+    <button class="mobile-nav-item" id="mnav-listas" onclick="showScreen('listas'); setMobileNav('listas')">
+      <span class="mnav-icon">📋</span>
+      <span class="mnav-label">Listas</span>
+    </button>
+  </nav>
 
   <!-- ===== MODAL EDITAR EXPERIÊNCIA ===== -->
   <div id="modal-editar-exp" class="lista-modal" style="display:none">
