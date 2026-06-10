@@ -1,565 +1,194 @@
-/* RESET & VARIABLES ========== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --red:    #C8102E;
-  --red-dk: #A00D23;
-  --blue:   #0A2240;
-  --blue-md:#1A3A5C;
-  --gold:   #C9A84C;
-  --cream:  #F5F1EB;
-  --white:  #FFFFFF;
-  --gray:   #8A8A8A;
-  --radius:    16px;
-  --radius-sm:  9px;
-  --radius-xs:  6px;
-  --shadow:    0 4px 24px rgba(10,34,64,0.10);
-  --shadow-lg: 0 12px 48px rgba(10,34,64,0.16);
-  --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
-  --font-display: 'Bebas Neue', sans-serif;
-  --font-body:    'DM Sans', sans-serif;
-}
-html { scroll-behavior: smooth; }
-body { font-family: var(--font-body); background: var(--cream); color: #1A1A1A; overflow-x: hidden; font-size: 16px; } /* base explícita */
-button { cursor: pointer; font-family: var(--font-body); }
-a { text-decoration: none; color: inherit; }
+using System.Security.Claims;
+using DiarioCopaApi.Data;
+using DiarioCopaApi.Models;
+using DiarioCopaApi.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
-/* ========== SCROLLBAR ========== */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--cream); }
-::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+namespace DiarioCopaApi.Controllers;
 
-/* ========== KEYFRAMES ========== */
-@keyframes pulse-badge {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
-  50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(74,222,128,0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+[Route("api/[controller]")]
+[ApiController]
+[Authorize]
+public class ExperienciasController : ControllerBase
+{
+    private readonly DiarioCopaContext _context;
+    private readonly Cloudinary _cloudinary;
 
-/* ========== APP SHELL ========== */
-.app-shell { min-height: 100vh; background: var(--cream); display: flex; flex-direction: column; }
+    public ExperienciasController(DiarioCopaContext context, Cloudinary cloudinary)
+    {
+        _context = context;
+        _cloudinary = cloudinary;
+    }
 
-/* ========== NAV ========== */
-.app-nav {
-  background: var(--blue); height: 64px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px; position: sticky; top: 0; z-index: 50;
-  box-shadow: 0 2px 20px rgba(10,34,64,0.35);
-}
-.app-logo {
-  font-family: var(--font-display); font-size: 20px; color: var(--gold);
-  letter-spacing: 1px; display: flex; align-items: center; gap: 8px;
-}
-.app-logo-sub {
-  font-family: var(--font-body); font-size: 12px; font-weight: 400; /* era 11px */
-  color: rgba(255,255,255,0.45); display: block; letter-spacing: 0;
-}
-.app-tabs {
-  display: flex; gap: 4px; background: rgba(255,255,255,0.07);
-  padding: 4px; border-radius: 10px;
-}
-.app-tab {
-  padding: 6px 18px; border-radius: 7px; font-size: 14px; font-weight: 500; /* era 13px */
-  color: rgba(255,255,255,0.55); background: none; border: none;
-  cursor: pointer; transition: var(--transition);
-}
-.app-tab.active { background: var(--red); color: white; }
-.app-tab:hover:not(.active) { background: rgba(255,255,255,0.1); color: white; }
-.app-user-bar { display: flex; align-items: center; gap: 10px; }
-.app-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--red), var(--gold));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 600; color: white; /* era 13px */
-}
-.back-btn {
-  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
-  border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-xs);
-  font-size: 13px; padding: 6px 14px; transition: var(--transition); /* era 12px */
-  display: inline-flex; align-items: center;
-}
-.back-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+    [HttpPost("criar-experiencia")]
+    public IActionResult RegistrarExperiencia([FromBody] CriarExperienciaDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-/* ========== SCREENS ========== */
-.app-screen { display: none; animation: fadeIn 0.25s ease; }
-.app-screen.active { display: block; }
+        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (idClaim == null)
+            return Unauthorized(new { mensagem = "Usuário não autenticado." });
 
-/* ========== HOME — HERO ========== */
-.home-hero-inner {
-  background: var(--blue); padding: 36px 32px 48px;
-  position: relative; overflow: hidden;
-}
-.home-hero-bg {
-  position: absolute; inset: 0; pointer-events: none;
-  background-image: repeating-linear-gradient(60deg, rgba(255,255,255,0.03) 0,
-    rgba(255,255,255,0.03) 1px, transparent 1px, transparent 40px);
-}
-.home-hero-circle {
-  position: absolute; right: -60px; top: 50%; transform: translateY(-50%);
-  width: 320px; height: 320px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(200,16,46,0.25) 0%, transparent 70%);
-  pointer-events: none;
-}
-.home-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(201,168,76,0.18); border: 1px solid rgba(201,168,76,0.4);
-  border-radius: 40px; padding: 4px 14px; margin-bottom: 16px;
-}
-.live-dot {
-  width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
-  animation: pulse-badge 1.4s ease-in-out infinite;
-}
-.badge-lbl { font-size: 13px; font-weight: 600; color: var(--gold); } /* era 12px */
-.home-title {
-  font-family: var(--font-display); font-size: 48px; color: white;
-  line-height: 1; letter-spacing: 1px; margin-bottom: 6px; position: relative; z-index: 2;
-}
-.home-title em { font-style: normal; color: var(--gold); }
-.home-sub {
-  font-size: 15px; color: rgba(255,255,255,0.5); margin-bottom: 28px; /* era 14px */
-  position: relative; z-index: 2; font-weight: 300;
-}
-.home-stats { display: flex; gap: 32px; position: relative; z-index: 2; }
-.hs-num { font-family: var(--font-display); font-size: 32px; color: var(--gold); line-height: 1; }
-.hs-lbl { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; } /* era 11px */
+        var idUsuarioLogado = Guid.Parse(idClaim.Value);
 
-/* ========== HOME — FEED ========== */
-.app-content { padding: 28px 32px; }
-.sec-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.sec-title { font-family: var(--font-display); font-size: 24px; color: var(--blue); letter-spacing: 0.5px; } /* era 22px */
-.btn-outline-sm {
-  font-size: 13px; font-weight: 500; padding: 6px 16px; /* era 12px */
-  border-radius: var(--radius-xs); border: 1.5px solid var(--red);
-  background: none; color: var(--red); transition: var(--transition);
-}
-.btn-outline-sm:hover { background: var(--red); color: white; }
-.feed-list { display: flex; flex-direction: column; gap: 14px; }
-.feed-vazio { font-size: 15px; color: var(--gray); text-align: center; padding: 48px 0; line-height: 1.7; } /* era 14px */
-.feed-card {
-  background: white; border-radius: var(--radius); padding: 20px 22px; /* era 18px 20px */
-  border: 1px solid rgba(10,34,64,0.07); transition: var(--transition); cursor: pointer;
-}
-.feed-card:hover { border-color: rgba(200,16,46,0.22); transform: translateY(-2px); box-shadow: var(--shadow); }
-.fc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.fc-match { font-size: 16px; font-weight: 600; color: var(--blue); display: flex; align-items: center; gap: 10px; } /* era 15px */
-.score-pill { background: var(--red); color: white; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 20px; letter-spacing: 1px; } /* era 12px */
-.fc-emoji { font-size: 22px; }
-.fc-text { font-size: 15px; color: #555; line-height: 1.65; margin-bottom: 12px; font-weight: 300; } /* era 13.5px */
-.fc-bottom { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid rgba(10,34,64,0.05); }
-.stars-row { display: flex; gap: 2px; }
-.star-icon { font-size: 14px; color: var(--gold); } /* era 13px */
-.star-icon.empty { opacity: 0.2; }
-.fc-loc { font-size: 13px; color: var(--gray); display: flex; align-items: center; gap: 4px; } /* era 12px */
-.loc-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); display: inline-block; }
-.fc-date { font-size: 12px; color: var(--gray); margin-left: auto; } /* era 11.5px */
+        var jogoExiste = _context.Jogos.Any(j => j.Id == dto.IdJogo);
+        if (!jogoExiste)
+            return NotFound(new { mensagem = "O jogo informado não foi encontrado." });
 
-/* ========== REGISTRAR ========== */
-.reg-wrap { padding: 28px 32px; }
-.reg-match-banner {
-  background: var(--blue); border-radius: var(--radius); padding: 20px 22px;
-  display: flex; align-items: center; gap: 18px; margin-bottom: 20px;
-}
-.rmb-info { flex: 1; }
-.rmb-teams { font-family: var(--font-display); font-size: 24px; color: white; letter-spacing: 0.5px; }
-.rmb-meta { font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 4px; } /* era 12px */
-.rmb-score {
-  background: var(--red); color: white; font-family: var(--font-display);
-  font-size: 22px; padding: 10px 18px; border-radius: var(--radius-sm); letter-spacing: 2px;
-}
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.fg { display: flex; flex-direction: column; gap: 7px; }
-.fg.full { grid-column: 1 / -1; }
-.fg label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--blue); } /* era 11px */
-.fg input, .fg textarea, .fg select {
-  border: 1.5px solid rgba(10,34,64,0.12); border-radius: var(--radius-xs);
-  padding: 12px 14px; font-size: 15px; font-family: var(--font-body); /* era padding 11px 13px, font 14px */
-  background: white; color: var(--blue); outline: none; transition: var(--transition);
-}
-.fg input:focus, .fg textarea:focus, .fg select:focus { border-color: var(--red); }
-.fg textarea { min-height: 96px; resize: none; line-height: 1.6; } /* era 88px */
-.star-picker { display: flex; gap: 6px; align-items: center; }
-.spick { font-size: 28px; background: none; border: none; color: #ddd; transition: var(--transition); line-height: 1; } /* era 26px */
-.spick.on { color: var(--gold); }
-.spick:hover { transform: scale(1.15); }
-.sent-row { display: flex; gap: 8px; }
-.sent-opt {
-  flex: 1; padding: 12px 6px; border: 2px solid rgba(10,34,64,0.1); /* era 11px */
-  border-radius: var(--radius-sm); background: white; cursor: pointer;
-  text-align: center; font-size: 24px; transition: var(--transition); /* era 22px */
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-}
-.sent-opt .sl { font-size: 11px; color: var(--gray); font-family: var(--font-body); } /* era 10px */
-.sent-opt.on { border-color: var(--gold); background: rgba(201,168,76,0.08); }
-.check-row { display: flex; gap: 20px; align-items: center; }
-.check-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.check-item input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--red); cursor: pointer; } /* era 16px */
-.check-item span { font-size: 15px; color: var(--blue); } /* era 14px */
-.btn-primary-full {
-  background: var(--red); color: white; border: none; border-radius: var(--radius-sm);
-  padding: 15px 28px; font-size: 16px; font-weight: 600; width: 100%; margin-top: 4px; /* era padding 14px, font 15px */
-  transition: var(--transition); letter-spacing: 0.3px;
-}
-.btn-primary-full:hover { background: var(--red-dk); transform: translateY(-1px); }
-.reg-erro {
-  background: #fff0f0; border: 1px solid rgba(200,16,46,0.2); border-radius: var(--radius-xs);
-  padding: 10px 14px; font-size: 14px; color: var(--red); margin-bottom: 8px; /* era 13px */
-}
+        var jaAvaliou = _context.Experiencias.Any(e => e.IdUsuario == idUsuarioLogado && e.IdJogo == dto.IdJogo);
+        if (jaAvaliou)
+            return Conflict(new { mensagem = "Você já registrou uma experiência para este jogo." });
 
-/* ========== TIMELINE ========== */
-.tl-wrap { padding: 28px 32px; }
-.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
-.fchip {
-  padding: 7px 16px; border-radius: 40px; font-size: 13px; font-weight: 500; /* era 12.5px */
-  border: 1.5px solid rgba(10,34,64,0.12); background: white; cursor: pointer;
-  color: var(--blue); transition: var(--transition); font-family: var(--font-body);
-}
-.fchip.active { background: var(--blue); color: white; border-color: var(--blue); }
-.fchip:hover:not(.active) { border-color: var(--red); color: var(--red); }
-.timeline { position: relative; padding-left: 32px; }
-.timeline::before {
-  content: ''; position: absolute; left: 12px; top: 8px; bottom: 8px;
-  width: 2px; border-radius: 2px;
-  background: linear-gradient(to bottom, var(--red), var(--gold), rgba(10,34,64,0.08));
-}
-.tl-item { position: relative; margin-bottom: 22px; }
-.tl-dot {
-  position: absolute; left: -24px; top: 10px;
-  width: 13px; height: 13px; border-radius: 50%;
-  background: var(--red); border: 2.5px solid var(--cream);
-}
-.tl-dot.gold { background: var(--gold); }
-.tl-card {
-  background: white; border-radius: var(--radius); padding: 18px 20px;
-  border: 1px solid rgba(10,34,64,0.07); transition: var(--transition);
-}
-.tl-card:hover { box-shadow: var(--shadow); transform: translateX(3px); }
-.tlc-head {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 15px; font-weight: 600; color: var(--blue); margin-bottom: 5px; /* era 14px */
-}
-.tlc-date { font-size: 12px; font-weight: 400; color: var(--gray); } /* era 11px */
-.tlc-body { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 10px; font-weight: 300; } /* era 13px */
-.tlc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tl-tag {
-  font-size: 12px; padding: 3px 11px; border-radius: 20px; /* era 11px */
-  background: rgba(10,34,64,0.06); color: var(--blue); font-weight: 500;
-}
-.tl-tag.red  { background: rgba(200,16,46,0.08); color: var(--red); }
-.tl-tag.gold { background: rgba(201,168,76,0.15); color: #8b6e2a; }
+        var novaExperiencia = new Experiencia
+        {
+            IdUsuario   = idUsuarioLogado,
+            IdJogo      = dto.IdJogo,
+            Nota        = dto.Nota,
+            Sentimento  = dto.Sentimento,
+            Comentario  = dto.Comentario,
+            Localizacao = dto.Localizacao,
+            Assistido   = dto.Assistido,
+            Favorito    = dto.Favorito,
+            URL_Imagem  = dto.URL_Imagem
+        };
 
-/* ========== STATS ========== */
-.stats-wrap { padding: 28px 32px; }
-.stats-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.scard { background: white; border-radius: var(--radius); padding: 18px 20px; border: 1px solid rgba(10,34,64,0.07); }
-.scard-lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray); font-weight: 600; margin-bottom: 8px; } /* era 11px */
-.scard-num { font-family: var(--font-display); font-size: 38px; color: var(--blue); line-height: 1; }
-.scard-num.red  { color: var(--red); }
-.scard-num.gold { color: var(--gold); }
-.scard-sub { font-size: 13px; color: var(--gray); margin-top: 4px; } /* era 12px */
+        _context.Experiencias.Add(novaExperiencia);
+        _context.SaveChanges();
 
-/* ========== LISTAS ========== */
-.lists-wrap { padding: 28px 32px; }
-.btn-create-list {
-  background: var(--red); color: white; border: none; border-radius: var(--radius-sm);
-  font-size: 15px; font-weight: 600; padding: 11px 24px; transition: var(--transition); /* era 14px */
-}
-.btn-create-list:hover { background: var(--red-dk); }
-.lists-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.list-card {
-  background: white; border-radius: var(--radius); padding: 22px 20px; /* era 20px 18px */
-  border: 1px solid rgba(10,34,64,0.08); transition: var(--transition); cursor: pointer;
-}
-.list-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
-.lc-icon  { font-size: 32px; margin-bottom: 10px; }
-.lc-name  { font-size: 16px; font-weight: 600; color: var(--blue); margin-bottom: 4px; } /* era 15px */
-.lc-desc  { font-size: 14px; color: var(--gray); line-height: 1.55; font-weight: 300; margin-bottom: 10px; } /* era 12.5px */
-.lc-count { font-size: 12px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: 0.5px; } /* era 11px */
+        return Ok(new { mensagem = "Experiência registrada no seu diário com sucesso!", idExperiencia = novaExperiencia.IdExperiencia, id = novaExperiencia.IdExperiencia });
+    }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 900px) {
-  .app-tabs    { gap: 2px; }
-  .app-tab     { padding: 6px 12px; font-size: 13px; }
-  .stats-grid-4 { grid-template-columns: 1fr 1fr; }
-  .lists-grid  { grid-template-columns: 1fr 1fr; }
-  .form-grid   { grid-template-columns: 1fr; }
-  .fg.full     { grid-column: 1; }
-}
-@media (max-width: 640px) {
-  .app-tabs    { display: none; }
-  .home-stats  { gap: 16px; flex-wrap: wrap; }
-  .stats-grid-4 { grid-template-columns: 1fr 1fr; }
-  .sent-row    { flex-wrap: wrap; }
-  .app-content, .reg-wrap, .tl-wrap, .stats-wrap, .lists-wrap { padding: 20px 16px; }
-  .home-hero-inner { padding: 24px 16px 32px; }
-  /* Empurra o conteúdo para cima da navbar mobile */
-  .app-shell   { padding-bottom: 64px; }
-  /* Navbar mobile visível */
-  .mobile-nav  { display: flex; }
-}
+    [HttpGet("listar-experiencias")]
+    public IActionResult ListarExperiencias()
+    {
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-/* ========== LISTA FORM CARD ========== */
-.lista-form-card {
-  background: white; border-radius: var(--radius);
-  border: 1px solid rgba(10,34,64,0.10);
-  border-left: 4px solid var(--red);
-  padding: 22px 24px; margin-bottom: 20px; /* era 20px 22px */
-  box-shadow: var(--shadow);
-  display: flex; flex-direction: column; gap: 14px;
-}
-.lfcard-title { font-size: 16px; font-weight: 600; color: var(--blue); } /* era 15px */
-.lfcard-row { display: flex; gap: 14px; }
-.lfcard-row .fg { display: flex; flex-direction: column; gap: 5px; }
-.lfcard-row .fg label { font-size: 13px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.4px; } /* era 12px */
-.lfcard-row .fg input {
-  border: 1.5px solid rgba(10,34,64,0.14); border-radius: var(--radius-xs);
-  padding: 10px 13px; font-size: 15px; font-family: var(--font-body); outline: none; /* era padding 9px 12px, font 14px */
-  transition: border-color var(--transition);
-}
-.lfcard-row .fg input:focus { border-color: var(--red); }
-.lfcard-btns { display: flex; gap: 10px; }
-.btn-primary-sm {
-  background: var(--red); color: white; border: none;
-  border-radius: var(--radius-xs); padding: 9px 22px; /* era 8px 20px */
-  font-size: 14px; font-weight: 600; font-family: var(--font-body); /* era 13px */
-  cursor: pointer; transition: background var(--transition);
-}
-.btn-primary-sm:hover { background: var(--red-dk); }
+        var minhasExperiencias = _context.Experiencias
+            .Include(e => e.Jogo)
+            .Where(e => e.IdUsuario == idUsuarioLogado)
+            .OrderByDescending(e => e.DataCriacao)
+            .Select(e => new ExperienciaRespostaDto
+            {
+                IdExperiencia = e.IdExperiencia,
+                IdJogo        = e.IdJogo,
+                JogoTitulo    = $"{e.Jogo!.Time1} x {e.Jogo!.Time2}",
+                DataJogo      = e.Jogo.DataHora,
+                Fase          = e.Jogo.Fase,
+                GolsTime1     = e.Jogo.GolsTime1,
+                GolsTime2     = e.Jogo.GolsTime2,
+                Nota          = e.Nota,
+                Sentimento    = e.Sentimento,
+                Comentario    = e.Comentario,
+                Localizacao   = e.Localizacao,
+                DataRegistro  = e.DataCriacao,
+                Assistido     = e.Assistido,
+                Favorito      = e.Favorito,
+                UrlImagem     = e.URL_Imagem
+            })
+            .ToList();
 
-/* ========== LISTA CARD ACTIONS ========== */
-.lc-btns { display: flex; gap: 8px; margin-top: 12px; }
-.lc-btn-ver {
-  background: var(--blue); color: white; border: none;
-  border-radius: var(--radius-xs); padding: 7px 14px; /* era 6px */
-  font-size: 13px; font-weight: 600; font-family: var(--font-body); /* era 12px */
-  cursor: pointer; transition: background var(--transition); flex: 1;
-}
-.lc-btn-ver:hover { background: var(--blue-md); }
-.lc-btn-del {
-  background: transparent; color: var(--red);
-  border: 1.5px solid var(--red); border-radius: var(--radius-xs);
-  padding: 7px 12px; font-size: 13px; font-weight: 600; /* era 6px / 12px */
-  font-family: var(--font-body); cursor: pointer;
-  transition: background var(--transition), color var(--transition);
-}
-.lc-btn-del:hover { background: var(--red); color: white; }
+        return Ok(minhasExperiencias);
+    }
 
-/* ========== MODAL DE LISTA ========== */
-.lista-modal {
-  position: fixed; inset: 0;
-  background: rgba(10,34,64,0.5);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200; backdrop-filter: blur(2px);
-}
-.lista-modal-box {
-  background: white; border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  width: min(1000px, 95vw); max-height: 85vh;
-  padding: 0 32px 24px;
-  display: flex; flex-direction: column; overflow: hidden;
-  animation: fadeIn 0.2s ease;
-}
-.lm-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 26px; border-bottom: 1px solid rgba(10,34,64,0.08); /* era 18px 24px */
-}
-.lm-title { font-size: 18px; font-weight: 600; color: var(--blue); } /* era 17px */
-.lm-close {
-  background: none; border: none; font-size: 17px; cursor: pointer; /* era 16px */
-  color: var(--gray); line-height: 1; padding: 4px 8px; border-radius: 6px;
-  transition: background var(--transition);
-}
-.lm-close:hover { background: rgba(200,16,46,0.08); color: var(--red); }
-.lm-add-row {
-  display: flex; gap: 10px; padding: 18px 26px 0; /* era 16px 24px */
-}
-.lm-add-row select {
-  flex: 1; border: 1.5px solid rgba(10,34,64,0.14);
-  border-radius: var(--radius-xs); padding: 10px 13px; /* era 9px 12px */
-  font-size: 14px; font-family: var(--font-body); outline: none; /* era 13.5px */
-  transition: border-color var(--transition);
-}
-.lm-add-row select:focus { border-color: var(--blue); }
-.lm-jogos-lista {
-  display: flex; flex-direction: column; gap: 8px;
-  padding: 14px 26px 22px; overflow-y: auto; /* era 12px 24px 20px */
-}
-.lm-jogo-item {
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(10,34,64,0.03); border-radius: var(--radius-xs);
-  padding: 13px 15px; gap: 12px; /* era 12px 14px */
-  border: 1px solid rgba(10,34,64,0.07);
-}
-.lm-jogo-info { flex: 1; }
-.lm-jogo-placar { font-size: 15px; font-weight: 600; color: var(--blue); } /* era 14px */
-.lm-jogo-meta { font-size: 13px; color: var(--gray); margin-top: 2px; } /* era 12px */
-.lm-btn-rem {
-  background: transparent; color: var(--red);
-  border: 1.5px solid var(--red); border-radius: var(--radius-xs);
-  padding: 6px 13px; font-size: 13px; font-weight: 600; /* era 5px 12px / 12px */
-  font-family: var(--font-body); cursor: pointer; white-space: nowrap;
-  transition: background var(--transition), color var(--transition);
-}
-.lm-btn-rem:hover { background: var(--red); color: white; }
-.lm-jogos-lista .feed-vazio { padding: 1.5rem; }
+    [Authorize]
+    [HttpGet("listar-favoritos")]
+    public async Task<IActionResult> GetExperienciasFavoritas()
+    {
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-/* ===== AÇÕES NOS CARDS (editar / excluir) ===== */
-.fc-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(10,34,64,0.07);
-}
-.fc-btn-edit {
-  background: var(--blue); color: white; border: none;
-  border-radius: var(--radius-xs); padding: 8px 16px; /* era 6px 14px */
-  font-size: 13px; font-weight: 600; font-family: var(--font-body); /* era 12px */
-  cursor: pointer; transition: background var(--transition); flex: 1;
-}
-.fc-btn-edit:hover { background: var(--blue-md); }
-.fc-btn-del {
-  background: transparent; color: var(--red);
-  border: 1.5px solid var(--red); border-radius: var(--radius-xs);
-  padding: 8px 14px; font-size: 13px; font-weight: 600; /* era 6px 12px / 12px */
-  font-family: var(--font-body); cursor: pointer;
-  transition: background var(--transition), color var(--transition);
-}
-.fc-btn-del:hover { background: var(--red); color: white; }Host not in allowlist
-/* ========== IMAGEM DE EXPERIÊNCIA (RF09) ========== */
-.experiencia-imagem-container {
-  margin: 12px 0;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  max-height: 320px;
-  background: rgba(10,34,64,0.04);
-}
-.experiencia-imagem {
-  width: 100%;
-  max-height: 320px;
-  object-fit: cover;
-  display: block;
-  border-radius: var(--radius-sm);
-  transition: transform var(--transition);
-}
-.experiencia-imagem:hover { transform: scale(1.015); }
+        var experienciasFavoritas = await _context.Experiencias
+            .Include(e => e.Jogo)
+            .Where(e => e.IdUsuario == idUsuarioLogado && e.Favorito == true)
+            .ToListAsync();
 
-/* Botão de imagem nos cards */
-.fc-btn-img {
-  background: transparent;
-  color: var(--blue);
-  border: 1.5px solid rgba(10,34,64,0.18);
-  border-radius: var(--radius-xs);
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font-body);
-  cursor: pointer;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
-  flex: 1;
-}
-.fc-btn-img:hover {
-  background: var(--blue);
-  color: white;
-  border-color: var(--blue);
-}
-.fc-btn-img:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
+        return Ok(experienciasFavoritas);
+    }
+    
+    [HttpPut("{idExperiencia}")]
+    public IActionResult EditarExperiencia(Guid idExperiencia, [FromBody] EditarExperienciaDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-/* ========== TOAST DE NOTIFICAÇÃO ========== */
-.app-toast {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  padding: 13px 22px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font-body);
-  color: white;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
-  z-index: 9999;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  pointer-events: none;
-  max-width: 340px;
-}
-.app-toast--visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.app-toast--sucesso { background: #16a34a; }
-.app-toast--erro    { background: var(--red); }
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-/* ========== NAVBAR MOBILE ========== */
-.mobile-nav {
-  display: none; /* só aparece em mobile via @media */
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: 64px;
-  background: var(--blue);
-  border-top: 1px solid rgba(255,255,255,0.1);
-  z-index: 100;
-  box-shadow: 0 -4px 20px rgba(10,34,64,0.3);
-}
-.mobile-nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
-  padding: 8px 4px;
-  transition: var(--transition);
-  font-family: var(--font-body);
-}
-.mobile-nav-item.active {
-  color: var(--gold);
-}
-.mobile-nav-item:hover:not(.active) {
-  color: rgba(255,255,255,0.85);
-}
-.mnav-icon  { font-size: 20px; line-height: 1; }
-.mnav-label { font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
+        var experiencia = _context.Experiencias
+            .FirstOrDefault(e => e.IdExperiencia == idExperiencia && e.IdUsuario == idUsuarioLogado);
 
-/* ========== ÁREA DE UPLOAD DE IMAGEM (registro) ========== */
-.img-upload-area {
-  border: 2px dashed rgba(10,34,64,0.18);
-  border-radius: var(--radius-sm);
-  padding: 22px 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color var(--transition), background var(--transition);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  background: rgba(10,34,64,0.02);
-  min-height: 88px;
-}
-.img-upload-area:hover {
-  border-color: var(--red);
-  background: rgba(200,16,46,0.03);
-}
-.img-upload-area.has-image {
-  border-color: var(--gold);
-  background: rgba(201,168,76,0.05);
-  padding: 12px;
-}
-.img-upload-icon { font-size: 26px; line-height: 1; }
-.img-upload-txt  { font-size: 14px; color: var(--gray); font-weight: 400; }
-.img-upload-preview {
-  width: 100%;
-  max-height: 220px;
-  object-fit: cover;
-  border-radius: var(--radius-xs);
-  display: block;
+        if (experiencia == null)
+            return NotFound(new { mensagem = "Experiência não encontrada ou você não tem permissão para editá-la." });
+
+        experiencia.Nota        = dto.Nota;
+        experiencia.Sentimento  = dto.Sentimento;
+        experiencia.Comentario  = dto.Comentario;
+        experiencia.Localizacao = dto.Localizacao;
+
+        if (dto.URL_Imagem != null)
+            experiencia.URL_Imagem = dto.URL_Imagem;
+
+        _context.Experiencias.Update(experiencia);
+        _context.SaveChanges();
+
+        return Ok(new { mensagem = "Sua experiência foi atualizada com sucesso!" });
+    }
+
+    [HttpDelete("{idExperiencia}")]
+    public IActionResult ApagarExperiencia(Guid idExperiencia)
+    {
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var experiencia = _context.Experiencias
+            .FirstOrDefault(e => e.IdExperiencia == idExperiencia && e.IdUsuario == idUsuarioLogado);
+
+        if (experiencia == null)
+            return NotFound(new { mensagem = "Experiência não encontrada ou você não tem permissão para apagá-la." });
+
+        _context.Experiencias.Remove(experiencia);
+        _context.SaveChanges();
+
+        return Ok(new { mensagem = "Experiência apagada com sucesso do seu diário." });
+    }
+
+    [HttpPost("{idExperiencia}/imagem")]
+    public async Task<IActionResult> UploadImagem(Guid idExperiencia, IFormFile imagem)
+    {
+        if (imagem == null || imagem.Length == 0)
+            return BadRequest(new { mensagem = "Nenhuma imagem foi enviada." });
+        
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var experiencia = _context.Experiencias
+            .FirstOrDefault(e => e.IdExperiencia == idExperiencia && e.IdUsuario == idUsuarioLogado);
+
+        if (experiencia == null)
+            return NotFound(new { mensagem = "Experiência não encontrada ou não pertence a você." });
+
+        var uploadResult = new ImageUploadResult();
+
+        using (var stream = imagem.OpenReadStream())
+        {
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(imagem.FileName, stream),
+                // Opcional: Define uma pasta dentro do seu Cloudinary para organizar
+                Folder = "diario-copa-experiencias", 
+                // Opcional: Corta e otimiza a imagem para não gastar muita internet do Front-end
+                Transformation = new Transformation().Height(800).Width(800).Crop("limit")
+            };
+            uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        }
+        if (uploadResult.Error != null)
+            return StatusCode(500, new { mensagem = "Erro ao enviar imagem para a nuvem.", detalhes = uploadResult.Error.Message });
+        
+        experiencia.URL_Imagem = uploadResult.SecureUrl.ToString();
+        _context.Experiencias.Update(experiencia);
+        _context.SaveChanges();
+
+        return Ok(new { mensagem = "Imagem salva com sucesso!", url = experiencia.URL_Imagem });
+    }
 }

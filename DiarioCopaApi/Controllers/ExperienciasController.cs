@@ -60,7 +60,7 @@ public class ExperienciasController : ControllerBase
         _context.Experiencias.Add(novaExperiencia);
         _context.SaveChanges();
 
-        return Ok(new { mensagem = "Experiência registrada no seu diário com sucesso!", id = novaExperiencia.IdExperiencia });
+        return Ok(new { mensagem = "Experiência registrada no seu diário com sucesso!", idExperiencia = novaExperiencia.IdExperiencia, id = novaExperiencia.IdExperiencia });
     }
 
     [HttpGet("listar-experiencias")]
@@ -87,7 +87,8 @@ public class ExperienciasController : ControllerBase
                 Localizacao   = e.Localizacao,
                 DataRegistro  = e.DataCriacao,
                 Assistido     = e.Assistido,
-                Favorito      = e.Favorito
+                Favorito      = e.Favorito,
+                UrlImagem     = e.URL_Imagem
             })
             .ToList();
 
