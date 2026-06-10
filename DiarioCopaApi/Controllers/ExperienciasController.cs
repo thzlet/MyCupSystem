@@ -94,6 +94,20 @@ public class ExperienciasController : ControllerBase
         return Ok(minhasExperiencias);
     }
 
+    [Authorize]
+    [HttpGet("listar-favoritos")]
+    public async Task<IActionResult> GetExperienciasFavoritas()
+    {
+        var idUsuarioLogado = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var experienciasFavoritas = await _context.Experiencias
+            .Include(e => e.Jogo)
+            .Where(e => e.IdUsuario == idUsuarioLogado && e.Favorito == true)
+            .ToListAsync();
+
+        return Ok(experienciasFavoritas);
+    }
+    
     [HttpPut("{idExperiencia}")]
     public IActionResult EditarExperiencia(Guid idExperiencia, [FromBody] EditarExperienciaDto dto)
     {
