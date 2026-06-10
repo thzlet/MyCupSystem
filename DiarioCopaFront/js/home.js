@@ -106,6 +106,7 @@ async function carregarJogos() {
 /**
  * Normaliza o campo de URL de imagem de uma experiência,
  * tratando as diferentes variações de nomenclatura que a API pode retornar.
+ * Também garante que a URL use HTTPS (evita bloqueio em mobile).
  */
 function normalizarUrlImagem(e) {
   const url =
@@ -118,7 +119,9 @@ function normalizarUrlImagem(e) {
     e.image_url   ||
     e.imagem      ||
     null;
-  return url && url.trim() !== '' ? url.trim() : null;
+  if (!url || url.trim() === '') return null;
+  // Força HTTPS — navegadores mobile bloqueiam imagens HTTP em páginas HTTPS
+  return url.trim().replace(/^http:\/\//i, 'https://');
 }
 
 async function carregarExperiencias() {
@@ -950,7 +953,7 @@ async function handleImagemSelecionada(e) {
     }
 
     // Pega a URL retornada pelo backend (tenta vários campos possíveis)
-    const urlImagem =
+    const urlBruta =
       res.data?.urlImagem  ||
       res.data?.url_Imagem ||
       res.data?.uRL_Imagem ||
@@ -961,6 +964,8 @@ async function handleImagemSelecionada(e) {
       res.data?.url        ||
       res.data?.imagem     ||
       null;
+    // Força HTTPS para evitar bloqueio em mobile
+    const urlImagem = urlBruta ? urlBruta.trim().replace(/^http:\/\//i, 'https://') : null;
 
     if (urlImagem) {
       // Atualiza a experiência no estado local para refletir sem recarregar tudo
