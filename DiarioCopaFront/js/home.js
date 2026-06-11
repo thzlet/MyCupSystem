@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await carregarPerfil();
   await carregarJogos();
   await carregarExperiencias();
-  await carregarFavoritos();
+  // Favoritos agora carregam junto com as experiências, não precisamos mais chamar aqui
   await carregarListas();
 
   // Input de arquivo oculto — dispara ao clicar no botão 📸
@@ -546,17 +546,40 @@ function renderListas() {
 
   grid.innerHTML = '';
 
-  // Card fixo de favoritos
-  const countFav = _favoritos.length;
+  // 1. Puxa a quantidade de favoritos filtrando direto das experiências (super rápido)
+  const favs = _experiencias.filter(e => e.favorito === true);
+  const countFav = favs.length;
+
+  // 2. Monta o Card fixo de favoritos
   const favCard  = document.createElement('div');
   favCard.className = 'list-card';
   favCard.innerHTML = `
     <div class="lc-icon">⭐</div>
     <div class="lc-name">Meus Favoritos</div>
     <div class="lc-desc">Os jogos que mais me marcaram emocionalmente durante a Copa 2026.</div>
-    <div class="lc-count" id="lc-count-fav">${formatCount(countFav)}</div>`;
+    <div class="lc-count" id="lc-count-fav">${formatCount(countFav)}</div>
+    <div class="lc-btns">
+      <button class="lc-btn-ver" style="width: 100%;">Ver na Linha do Tempo</button>
+    </div>`;
+
+  // 3. A mágica do clique: redireciona e aplica o filtro de favoritos automaticamente
+  favCard.querySelector('.lc-btn-ver').addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    showScreen('timeline'); // Muda para a aba da Linha do Tempo
+    
+    // Procura o botão "⭐ Favoritos" lá em cima e "clica" nele via código
+    const chips = document.querySelectorAll('.fchip');
+    chips.forEach(chip => {
+      if (chip.textContent.includes('Favoritos')) {
+        selChip(chip, 'favorito');
+      }
+    });
+  });
+
   grid.appendChild(favCard);
 
+  // Renderiza as outras listas criadas pelo usuário
   _listas.forEach(lista => {
     const card = document.createElement('div');
     card.className = 'list-card';
@@ -584,6 +607,14 @@ function renderListas() {
     });
     grid.appendChild(card);
   });
+
+  // Renderiza o botão "Criar nova lista"
+  const addCard = document.createElement('div');
+  addCard.className = 'list-card';
+  addCard.style.cssText = 'border:2px dashed rgba(10,34,64,0.12);background:rgba(10,34,64,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;cursor:pointer';
+  addCard.innerHTML = `<div style="font-size:36px;margin-bottom:8px;opacity:0.3">+</div><div style="font-size:13px;color:var(--gray);font-weight:500">Criar nova lista</div>`;
+  addCard.addEventListener('click', abrirFormLista);
+  grid.appendChild(addCard);
 
   if (emptyEl) emptyEl.style.display = 'none';
 }
