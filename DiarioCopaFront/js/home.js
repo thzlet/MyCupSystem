@@ -1133,3 +1133,7 @@ function converterNota(estrelas) {
   const mapa = { 1: 10, 2: 20, 3: 30, 4: 40, 5: 50 };
   return mapa[estrelas] ?? 0;
 }
+
+function alterarSenha() {
+    window.location.href = 'alterar-senha.html';
+}
