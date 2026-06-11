@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alterar Senha — Diário Digital Copa 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+
+  <!-- Botão voltar -->
+  <button class="auth-back-btn" onclick="voltarAnterior()">← Voltar</button>
+
+  <div class="auth-page">
+
+    <!-- Decorações de fundo -->
+    <div class="auth-circle-1"></div>
+    <div class="auth-circle-2"></div>
+
+    <!-- Card central -->
+    <div class="auth-card">
+
+      <!-- Logo -->
+      <div class="auth-logo">⚽ MY<span class="accent">CUP</span></div>
+      <p class="auth-tagline">Copa do Mundo 2026 · Sua memória esportiva</p>
+
+      <!-- Título da página -->
+      <div class="change-pw-header">
+        <div class="change-pw-icon">🔒</div>
+        <h2 class="change-pw-title">Alterar Senha</h2>
+        <p class="change-pw-subtitle">Escolha uma nova senha segura para sua conta.</p>
+      </div>
+
+      <!-- Formulário de alteração de senha -->
+      <form id="form-alterar-senha" class="auth-form" novalidate onsubmit="handleAlterarSenha(event)">
+
+        <div id="alterar-error" class="auth-error" role="alert"></div>
+        <div id="alterar-success" class="auth-success" role="status"></div>
+
+        <!-- Senha atual -->
+        <div class="auth-fg">
+          <label for="senha-atual">Senha Atual</label>
+          <div class="input-wrap">
+            <input
+              type="password"
+              id="senha-atual"
+              name="senhaAtual"
+              placeholder="Sua senha atual"
+              autocomplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-pw"
+              aria-label="Mostrar senha atual"
+              onclick="togglePassword('senha-atual')"
+            >👁</button>
+          </div>
+        </div>
+
+        <!-- Nova senha -->
+        <div class="auth-fg">
+          <label for="nova-senha">Nova Senha</label>
+          <div class="input-wrap">
+            <input
+              type="password"
+              id="nova-senha"
+              name="novaSenha"
+              placeholder="Mínimo 8 caracteres"
+              autocomplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-pw"
+              aria-label="Mostrar nova senha"
+              onclick="togglePassword('nova-senha')"
+            >👁</button>
+          </div>
+        </div>
+
+        <!-- Barra de força da senha -->
+        <div class="pw-strength-wrap">
+          <div class="pw-strength-bar">
+            <div id="pw-strength-fill" class="pw-strength-fill"></div>
+          </div>
+          <span id="pw-strength-label" class="pw-strength-label"></span>
+        </div>
+
+        <!-- Confirmar nova senha -->
+        <div class="auth-fg">
+          <label for="confirmar-nova-senha">Confirmar Nova Senha</label>
+          <div class="input-wrap">
+            <input
+              type="password"
+              id="confirmar-nova-senha"
+              name="confirmarNovaSenha"
+              placeholder="Repita a nova senha"
+              autocomplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-pw"
+              aria-label="Mostrar confirmação"
+              onclick="togglePassword('confirmar-nova-senha')"
+            >👁</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="btn-alterar">Salvar Nova Senha</button>
+
+        <p class="auth-switch">
+          Lembrou da senha?
+          <button type="button" onclick="window.location.href='home.html'">Voltar ao início</button>
+        </p>
+
+      </form>
+
+    </div><!-- /auth-card -->
+  </div><!-- /auth-page -->
+
+  <script src="js/api.js"></script>
+  <script src="js/alterar-senha.js"></script>
+</body>
+</html>
