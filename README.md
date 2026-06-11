@@ -43,8 +43,8 @@ Cada jogo tem uma história e essa história merece ser contada por quem a viveu
     <td align="center"><b>Iarley Freitas</b></td>
     <td align="center"><b>Gabriel Dourado</b></td>
     <td align="center"><b>Letícia Sousa</b></td>
-    <td align="center"><b>José G. Carvalho</b></td
-    <td align="center"><b>Ana C. Vidal</b></td>
+    <td align="center"><b>José G. Carvalho</b></td>
+    <td align="center"><b>Ana Carla</b></td>
   </tr>
 </table>
 
