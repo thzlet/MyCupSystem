@@ -585,13 +585,6 @@ function renderListas() {
     grid.appendChild(card);
   });
 
-  const addCard = document.createElement('div');
-  addCard.className = 'list-card';
-  addCard.style.cssText = 'border:2px dashed rgba(10,34,64,0.12);background:rgba(10,34,64,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;cursor:pointer';
-  addCard.innerHTML = `<div style="font-size:36px;margin-bottom:8px;opacity:0.3">+</div><div style="font-size:13px;color:var(--gray);font-weight:500">Criar nova lista</div>`;
-  addCard.addEventListener('click', abrirFormLista);
-  grid.appendChild(addCard);
-
   if (emptyEl) emptyEl.style.display = 'none';
 }
 
