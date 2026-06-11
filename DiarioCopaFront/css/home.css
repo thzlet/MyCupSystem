@@ -262,10 +262,10 @@ a { text-decoration: none; color: inherit; }
 /* ========== LISTAS ========== */
 .lists-wrap { padding: 28px 32px; }
 .btn-create-list {
-  background: var(--red); color: white; border: none; border-radius: var(--radius-sm);
+  background: #308e59; color: white; border: none; border-radius: var(--radius-sm);
   font-size: 15px; font-weight: 600; padding: 11px 24px; transition: var(--transition);
 }
-.btn-create-list:hover { background: var(--red-dk); }
+.btn-create-list:hover { background: #256e45; }
 .lists-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .list-card {
   background: white; border-radius: var(--radius); padding: 22px 20px;
