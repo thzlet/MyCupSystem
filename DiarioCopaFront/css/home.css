@@ -386,17 +386,17 @@ a { text-decoration: none; color: inherit; }
   #modal-editar-exp .lista-modal-box .fg.full {
     grid-column: 1;
   }
-  /* Sentimentos: scroll horizontal no mobile para não empilhar demais */
+  /* Sentimentos: 5 por linha (2 linhas) no mobile */
   #modal-editar-exp .sent-row {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
+    flex-wrap: unset;
+    overflow-x: unset;
   }
   #modal-editar-exp .sent-opt {
-    flex: 0 0 60px;
-    min-width: 60px;
+    flex: unset;
+    min-width: unset;
     padding: 10px 4px;
     font-size: 20px;
   }
