@@ -19,7 +19,7 @@ public class Experiencia
     public bool Assistido { get; set; }
     public bool Favorito  { get; set; }
 
-    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow.AddHours(-3);
 
     public Usuario? Usuario { get; set; }
     public Jogo?    Jogo    { get; set; }
